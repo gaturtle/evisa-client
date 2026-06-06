@@ -37,24 +37,19 @@ export const navigationSections: NavSection[] = [
     title: "Pricing",
     items: [
       {
-        id: "project-labels",
-        label: "Labels",
-        icon: Tag,
-      },
-      {
-        id: "project-templates",
-        label: "Templates",
-        icon: FileText,
-      },
-      {
-        id: "statuses",
-        label: "Statuses",
+        id: "Price-setup",
+        label: "Price setup",
         icon: Circle,
       },
       {
-        id: "updates",
-        label: "Updates",
-        icon: RefreshCw,
+        id: "Type-setup",
+        label: "Type setup",
+        icon: Tag,
+      },
+      {
+        id: "Processing-setup",
+        label: "Processing setup",
+        icon: FileText,
       },
     ],
   },

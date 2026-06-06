@@ -30,6 +30,13 @@ const formSchema = z.object({
   origName: z.string().min(1, "English name is required"),
   vietnameseName: z.string().min(1, "Vietnamese name is required"),
   isEligible: z.boolean(),
+  exemptionDays: z.coerce
+    .number()
+    .int()
+    .min(1, "Must be at least 1 day")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" ? undefined : v)),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -54,8 +61,11 @@ export function NationalityFormDialog({
       origName: "",
       vietnameseName: "",
       isEligible: false,
+      exemptionDays: undefined,
     },
   })
+
+  const isEligible = form.watch("isEligible")
 
   useEffect(() => {
     if (open) {
@@ -65,17 +75,25 @@ export function NationalityFormDialog({
               origName: nationality.origName,
               vietnameseName: nationality.vietnameseName,
               isEligible: nationality.isEligible,
+              exemptionDays: nationality.exemptionDays ?? undefined,
             }
-          : { origName: "", vietnameseName: "", isEligible: false }
+          : { origName: "", vietnameseName: "", isEligible: false, exemptionDays: undefined }
       )
     }
   }, [open, nationality, form])
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) =>
-      isEdit
-        ? updateNationality(nationality.id, values)
-        : createNationality(values),
+    mutationFn: async (values: FormValues) => {
+      const body = {
+        origName: values.origName,
+        vietnameseName: values.vietnameseName,
+        isEligible: values.isEligible,
+        exemptionDays: values.isEligible ? values.exemptionDays : undefined,
+      }
+      return isEdit
+        ? updateNationality(nationality.id, body)
+        : createNationality(body)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["nationalities"] })
       toast.success(isEdit ? "Nationality updated." : "Nationality created.")
@@ -142,6 +160,29 @@ export function NationalityFormDialog({
                 </FormItem>
               )}
             />
+
+            {isEligible && (
+              <FormField
+                control={form.control}
+                name="exemptionDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Exemption Days <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        placeholder="e.g. 90"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? "" : e.target.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <DialogFooter>
               <Button

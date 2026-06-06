@@ -1,6 +1,7 @@
 import { navigationSections } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 import type { NavItem } from "@/types/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSection } from "./SidebarSection";
 
@@ -30,22 +31,24 @@ export function Sidebar({ open = false, onClose, onNavigate, className }: Sideba
     >
       <SidebarHeader />
 
-      <nav
-        className="flex-1 overflow-y-auto overflow-x-visible px-1.5 py-1.5 flex flex-col gap-3"
-        aria-label="Settings navigation"
-      >
-        {navigationSections.map((section, index) => (
-          <div key={section.id}>
-            {index > 0 && (
-              <div className="mx-1.5 mb-3 border-t border-sidebar-border" />
-            )}
-            <SidebarSection
-              section={section}
-              onItemClick={handleNavigate}
-            />
-          </div>
-        ))}
-      </nav>
+      <ScrollArea className="flex-1">
+        <nav
+          className="px-1.5 py-1.5 flex flex-col gap-3"
+          aria-label="Settings navigation"
+        >
+          {navigationSections.map((section, index) => (
+            <div key={section.id}>
+              {index > 0 && (
+                <div className="mx-1.5 mb-3 border-t border-sidebar-border" />
+              )}
+              <SidebarSection
+                section={section}
+                onItemClick={handleNavigate}
+              />
+            </div>
+          ))}
+        </nav>
+      </ScrollArea>
     </aside>
   );
 }

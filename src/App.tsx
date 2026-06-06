@@ -3,11 +3,14 @@ import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import type { NavItem } from "@/types/navigation";
 import { NationalitiesPage } from "@/pages/nationalities";
+import { ExemptionsPage } from "@/pages/exemptions";
 
 function renderPage(item: NavItem) {
   switch (item.id) {
     case "nationality-labels":
       return <NationalitiesPage />;
+    case "nationality-exemption":
+      return <ExemptionsPage />;
     default:
       return (
         <div className="px-8 py-6 max-w-2xl">

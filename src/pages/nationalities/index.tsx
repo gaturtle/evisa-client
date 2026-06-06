@@ -73,7 +73,7 @@ export function NationalitiesPage() {
       </div>
 
       {/* Table — fills remaining height and scrolls */}
-      <div className="flex-1 min-h-0 rounded-lg border border-border flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 rounded-lg border border-border/50 flex flex-col overflow-hidden">
         {/* Fixed header — outside ScrollArea so the scrollbar never overlaps it */}
         <table className="w-full table-fixed text-sm shrink-0">
           <colgroup>
@@ -83,17 +83,17 @@ export function NationalitiesPage() {
             <col className="w-[15%]" />
           </colgroup>
           <thead>
-            <tr className="border-b border-border bg-muted/80">
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+            <tr className="border-b border-border/40 bg-muted/80">
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground/70">
                 Name
               </th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground/70">
                 Vietnamese Name
               </th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground/70">
                 Is Eligible
               </th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground/70">
                 Actions
               </th>
             </tr>
@@ -124,14 +124,14 @@ export function NationalitiesPage() {
                   <tr
                     key={nationality.id}
                     className={cn(
-                      "border-b border-border last:border-0 hover:bg-muted/30 transition-colors",
+                      "border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors",
                       index % 2 === 0 ? "bg-background" : "bg-muted/10",
                     )}
                   >
-                    <td className="px-4 py-3 font-medium text-foreground">
+                    <td className="px-4 py-3 font-medium text-foreground/80">
                       {nationality.name}
                     </td>
-                    <td className="px-4 py-3 text-foreground">
+                    <td className="px-4 py-3 text-foreground/60">
                       {nationality.vietnameseName}
                     </td>
                     <td className="px-4 py-3">

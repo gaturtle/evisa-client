@@ -1,19 +1,15 @@
-export interface VisaProcessing {
-  id: string
-  description: string
-  visaTypes: VisaType[] | null
-}
-
 export interface VisaType {
   id: string
   description: string
-  visaProcessings: VisaProcessing[] | null
+  price: number
 }
 
 export interface CreateVisaTypeRequest {
   description: string
+  price: number
 }
 
 export interface UpdateVisaTypeRequest {
   description: string
+  price: number
 }

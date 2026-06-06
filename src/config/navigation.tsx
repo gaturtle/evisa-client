@@ -1,7 +1,6 @@
 import type { NavSection } from "@/types/navigation";
 import {
   Building2,
-  Circle,
   Clock,
   FileText,
   Tag,
@@ -35,11 +34,6 @@ export const navigationSections: NavSection[] = [
     id: "pricing",
     title: "Pricing",
     items: [
-      {
-        id: "Price-setup",
-        label: "Price setup",
-        icon: Circle,
-      },
       {
         id: "Type-setup",
         label: "Type setup",

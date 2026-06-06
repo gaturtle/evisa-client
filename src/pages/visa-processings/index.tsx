@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query"
 
 import { getVisaProcessings } from "@/api/visa-processings"
 import type { VisaProcessing } from "@/types/visa-processing"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -23,29 +22,6 @@ import {
 import { TableContainer } from "@/components/ui/table-container"
 import { VisaProcessingFormDialog } from "@/pages/visa-processings/components/VisaProcessingFormDialog"
 import { DeleteVisaProcessingDialog } from "@/pages/visa-processings/components/DeleteVisaProcessingDialog"
-
-const MAX_BADGES = 2
-
-function VisaTypeBadges({ visaProcessing }: { visaProcessing: VisaProcessing }) {
-  const types = visaProcessing.visaTypes
-  if (!types || types.length === 0) {
-    return <span className="text-muted-foreground">—</span>
-  }
-  const visible = types.slice(0, MAX_BADGES)
-  const overflow = types.length - MAX_BADGES
-  return (
-    <div className="flex items-center gap-1 flex-wrap">
-      {visible.map((t) => (
-        <Badge key={t.id} variant="secondary" className="text-xs font-normal">
-          {t.description}
-        </Badge>
-      ))}
-      {overflow > 0 && (
-        <span className="text-xs text-muted-foreground">+{overflow} more</span>
-      )}
-    </div>
-  )
-}
 
 export function VisaProcessingsPage() {
   const [search, setSearch] = useState("")
@@ -77,7 +53,7 @@ export function VisaProcessingsPage() {
       <div className="mb-5 shrink-0">
         <h2 className="text-sm font-semibold text-foreground">Processing Setup</h2>
         <p className="text-sm text-muted-foreground">
-          Manage processing options and their associated visa types.
+          Manage processing options and their prices.
         </p>
       </div>
 
@@ -101,13 +77,13 @@ export function VisaProcessingsPage() {
           <Table className="min-w-max table-fixed text-sm [&_tr]:border-border/40">
             <colgroup>
               <col style={{ width: 240 }} />
-              <col style={{ width: 380 }} />
+              <col style={{ width: 120 }} />
               <col style={{ width: 90 }} />
             </colgroup>
             <TableHeader className="sticky top-0 z-10 bg-muted/80">
               <TableRow className="hover:bg-muted/80">
                 <TableHead className="px-4 text-muted-foreground/70">Description</TableHead>
-                <TableHead className="px-4 text-muted-foreground/70">Visa Types</TableHead>
+                <TableHead className="px-4 text-muted-foreground/70">Price</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -146,8 +122,8 @@ export function VisaProcessingsPage() {
                     <TableCell className="px-4 font-medium text-foreground/80">
                       {visaProcessing.description}
                     </TableCell>
-                    <TableCell className="px-4">
-                      <VisaTypeBadges visaProcessing={visaProcessing} />
+                    <TableCell className="px-4 text-foreground/80">
+                      ${visaProcessing.price.toFixed(2)}
                     </TableCell>
                     <TableCell className="px-4">
                       <div className="flex items-center gap-1">

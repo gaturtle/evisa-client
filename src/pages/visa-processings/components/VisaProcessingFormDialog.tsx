@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input"
 
 const formSchema = z.object({
   description: z.string().min(1, "Description is required"),
+  price: z.coerce.number().positive("Price must be a positive number"),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -47,12 +48,15 @@ export function VisaProcessingFormDialog({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { description: "" },
+    defaultValues: { description: "", price: 0 },
   })
 
   useEffect(() => {
     if (open) {
-      form.reset({ description: visaProcessing?.description ?? "" })
+      form.reset({
+        description: visaProcessing?.description ?? "",
+        price: visaProcessing?.price ?? 0,
+      })
     }
   }, [open, visaProcessing, form])
 
@@ -88,6 +92,20 @@ export function VisaProcessingFormDialog({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. Standard" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price ($)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min="0" placeholder="e.g. 10.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

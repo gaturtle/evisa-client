@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 interface Nationality {
@@ -72,10 +73,17 @@ export function NationalitiesPage() {
       </div>
 
       {/* Table — fills remaining height and scrolls */}
-      <div className="flex-1 min-h-0 rounded-lg border border-border overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10">
-            <tr className="border-b border-border bg-muted/80 backdrop-blur-sm">
+      <div className="flex-1 min-h-0 rounded-lg border border-border flex flex-col overflow-hidden">
+        {/* Fixed header — outside ScrollArea so the scrollbar never overlaps it */}
+        <table className="w-full table-fixed text-sm shrink-0">
+          <colgroup>
+            <col className="w-[35%]" />
+            <col className="w-[35%]" />
+            <col className="w-[15%]" />
+            <col className="w-[15%]" />
+          </colgroup>
+          <thead>
+            <tr className="border-b border-border bg-muted/80">
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                 Name
               </th>
@@ -85,45 +93,84 @@ export function NationalitiesPage() {
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                 Is Eligible
               </th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={3}
-                  className="px-4 py-12 text-center text-muted-foreground"
-                >
-                  No nationalities found.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((nationality, index) => (
-                <tr
-                  key={nationality.id}
-                  className={cn(
-                    "border-b border-border last:border-0 hover:bg-muted/30 transition-colors",
-                    index % 2 === 0 ? "bg-background" : "bg-muted/10",
-                  )}
-                >
-                  <td className="px-4 py-3 font-medium text-foreground">
-                    {nationality.name}
-                  </td>
-                  <td className="px-4 py-3 text-foreground">
-                    {nationality.vietnameseName}
-                  </td>
-                  <td className="px-4 py-3">
-                    {nationality.isEligible ? (
-                      <Badge variant="default">Eligible</Badge>
-                    ) : (
-                      <Badge variant="destructive">Not Eligible</Badge>
-                    )}
+        </table>
+
+        {/* Scrollable body only */}
+        <ScrollArea className="flex-1 min-h-0">
+          <table className="w-full table-fixed text-sm">
+            <colgroup>
+              <col className="w-[35%]" />
+              <col className="w-[35%]" />
+              <col className="w-[15%]" />
+              <col className="w-[15%]" />
+            </colgroup>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-4 py-12 text-center text-muted-foreground"
+                  >
+                    No nationalities found.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((nationality, index) => (
+                  <tr
+                    key={nationality.id}
+                    className={cn(
+                      "border-b border-border last:border-0 hover:bg-muted/30 transition-colors",
+                      index % 2 === 0 ? "bg-background" : "bg-muted/10",
+                    )}
+                  >
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      {nationality.name}
+                    </td>
+                    <td className="px-4 py-3 text-foreground">
+                      {nationality.vietnameseName}
+                    </td>
+                    <td className="px-4 py-3">
+                      {nationality.isEligible ? (
+                        <Badge variant="default">Eligible</Badge>
+                      ) : (
+                        <Badge variant="destructive">Not Eligible</Badge>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <button
+                          className={cn(
+                            "inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground",
+                            "hover:bg-muted hover:text-foreground transition-colors",
+                            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
+                          )}
+                          title="Edit"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          className={cn(
+                            "inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground",
+                            "hover:bg-destructive/10 hover:text-destructive transition-colors",
+                            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
+                          )}
+                          title="Delete"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </ScrollArea>
       </div>
 
       {/* Footer count */}

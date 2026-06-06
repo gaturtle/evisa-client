@@ -21,8 +21,8 @@ export const navigationSections: NavSection[] = [
         icon: Tag,
       },
       {
-        id: "nationality-templates",
-        label: "Templates",
+        id: "nationality-exemption",
+        label: "Exemption",
         icon: FileText,
       },
       {

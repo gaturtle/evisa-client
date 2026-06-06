@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Combobox } from "@/components/ui/combobox"
 
 const formSchema = z.object({
   visaTypeId: z.string().min(1, "Visa type is required"),
@@ -107,15 +108,13 @@ export function VisaPriceSetupFormDialog({
                 <FormItem>
                   <FormLabel>Visa Type</FormLabel>
                   <FormControl>
-                    <select
-                      {...field}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="">Select a visa type…</option>
-                      {visaTypes.map((t) => (
-                        <option key={t.id} value={t.id}>{t.description}</option>
-                      ))}
-                    </select>
+                    <Combobox
+                      options={visaTypes.map((t) => ({ value: t.id, label: t.description }))}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select a visa type…"
+                      searchPlaceholder="Search visa types…"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -129,15 +128,13 @@ export function VisaPriceSetupFormDialog({
                 <FormItem>
                   <FormLabel>Processing</FormLabel>
                   <FormControl>
-                    <select
-                      {...field}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="">Select a processing option…</option>
-                      {visaProcessings.map((p) => (
-                        <option key={p.id} value={p.id}>{p.description}</option>
-                      ))}
-                    </select>
+                    <Combobox
+                      options={visaProcessings.map((p) => ({ value: p.id, label: p.description }))}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select a processing option…"
+                      searchPlaceholder="Search processing options…"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

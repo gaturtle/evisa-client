@@ -20,6 +20,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { TableContainer } from "@/components/ui/table-container"
 import { NationalityFormDialog } from "@/pages/nationalities/components/NationalityFormDialog"
 import { DeleteNationalityDialog } from "@/pages/nationalities/components/DeleteNationalityDialog"
 
@@ -75,15 +76,14 @@ export function NationalitiesPage() {
         </Button>
       </div>
 
-      <div className="shrink-0 rounded-lg border border-border/50 overflow-hidden">
-        <div className="overflow-y-auto max-h-[calc(100vh-220px)]">
-          <Table className="w-full table-fixed text-sm [&_tr]:border-border/40">
+      <TableContainer className="shrink-0">
+          <Table className="min-w-max table-fixed text-sm [&_tr]:border-border/40">
             <colgroup>
-              <col className="w-[28%]" />
-              <col className="w-[28%]" />
-              <col className="w-[16%]" />
-              <col className="w-[16%]" />
-              <col className="w-[12%]" />
+              <col style={{ width: 220 }} />
+              <col style={{ width: 220 }} />
+              <col style={{ width: 120 }} />
+              <col style={{ width: 140 }} />
+              <col style={{ width: 90 }} />
             </colgroup>
             <TableHeader className="sticky top-0 z-10 bg-muted/80">
               <TableRow className="hover:bg-muted/80">
@@ -179,8 +179,7 @@ export function NationalitiesPage() {
                 ))}
             </TableBody>
           </Table>
-        </div>
-      </div>
+      </TableContainer>
 
       <p className="mt-2 text-xs text-muted-foreground shrink-0">
         {filtered.length} of {data.length} nationalities

@@ -21,7 +21,7 @@ export function Sidebar({ open = false, onClose, onNavigate, className }: Sideba
   return (
     <aside
       className={cn(
-        "flex flex-col border-r border-sidebar-border",
+        "flex flex-col border-r border-sidebar-border bg-sidebar",
         "w-48 h-full overflow-visible",
         "fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out",
         open ? "translate-x-0" : "-translate-x-full",

@@ -1,9 +1,10 @@
 import { useState } from "react"
-import { Search } from "lucide-react"
+import { Plus, Search } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 
 import { getUsers } from "@/api/auth"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Table,
@@ -14,9 +15,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { TableContainer } from "@/components/ui/table-container"
+import { UserFormDialog } from "./components/UserFormDialog"
 
 export function UsersPage() {
   const [search, setSearch] = useState("")
+  const [formOpen, setFormOpen] = useState(false)
 
   const { data = [], isLoading, isError } = useQuery({
     queryKey: ["users"],
@@ -38,7 +41,7 @@ export function UsersPage() {
         </p>
       </div>
 
-      <div className="flex items-center gap-3 mb-4 shrink-0">
+      <div className="flex items-center justify-between gap-3 mb-4 shrink-0">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
@@ -48,6 +51,10 @@ export function UsersPage() {
             className="pl-8"
           />
         </div>
+        <Button onClick={() => setFormOpen(true)} className="shrink-0">
+          <Plus className="h-4 w-4" />
+          Add User
+        </Button>
       </div>
 
       <TableContainer className="shrink-0">
@@ -125,6 +132,12 @@ export function UsersPage() {
       <p className="mt-2 text-xs text-muted-foreground shrink-0">
         {filtered.length} of {data.length} users
       </p>
+
+      <UserFormDialog
+        key="create"
+        open={formOpen}
+        onOpenChange={setFormOpen}
+      />
     </div>
   )
 }

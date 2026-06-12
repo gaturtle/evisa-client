@@ -77,11 +77,11 @@ An "Add User" button above the table that opens a create form dialog. The form c
 
 ### Acceptance criteria
 
-- [ ] Clicking "Add User" opens a dialog with Email, Full Name, Password, and Role fields
-- [ ] Submitting the form with missing or invalid fields shows inline validation errors
-- [ ] Successfully creating a user closes the dialog, refreshes the table, and shows a success toast
-- [ ] Attempting to create a user with a duplicate email shows an error toast with the API message
-- [ ] The Role field is a combobox restricted to "Admin" and "Staff" options
+- [x] Clicking "Add User" opens a dialog with Email, Full Name, Password, and Role fields
+- [x] Submitting the form with missing or invalid fields shows inline validation errors
+- [x] Successfully creating a user closes the dialog, refreshes the table, and shows a success toast
+- [x] Attempting to create a user with a duplicate email shows an error toast with the API message
+- [x] The Role field is a combobox restricted to "Admin" and "Staff" options
 
 ---
 

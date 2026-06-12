@@ -8,6 +8,7 @@ import { VisaTypesPage } from "@/pages/visa-types";
 import { VisaProcessingsPage } from "@/pages/visa-processings";
 import { ApplicationsPage } from "@/pages/applications";
 import { HolidaysPage } from "@/pages/holidays";
+import { UsersPage } from "@/pages/users";
 import { LoginPage } from "@/pages/login";
 import { useAuth } from "@/context/AuthContext";
 
@@ -25,6 +26,8 @@ function renderPage(item: NavItem) {
       return <HolidaysPage />;
     case "Application-list":
       return <ApplicationsPage />;
+    case "users":
+      return <UsersPage />;
     default:
       return (
         <div className="px-8 py-6 max-w-2xl">

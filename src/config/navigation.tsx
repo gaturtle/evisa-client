@@ -3,6 +3,7 @@ import {
   Building2,
   CalendarDays,
   FileText,
+  Shield,
   Tag,
   UserCheck,
   Users,
@@ -64,6 +65,18 @@ export const navigationSections: NavSection[] = [
         id: "members",
         label: "Members",
         icon: UserCheck,
+      },
+    ],
+  },
+  {
+    id: "administration",
+    title: "Administration",
+    adminOnly: true,
+    items: [
+      {
+        id: "users",
+        label: "Users",
+        icon: Shield,
       },
     ],
   },

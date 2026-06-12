@@ -14,6 +14,7 @@ export interface NavSection {
   id: string;
   title?: string;
   items: NavItem[];
+  adminOnly?: boolean;
 }
 
 export interface FooterNavItem {

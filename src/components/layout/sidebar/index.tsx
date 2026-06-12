@@ -15,7 +15,11 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open = false, onClose, onNavigate, className }: SidebarProps) {
-  const { logout } = useAuth();
+  const { logout, role } = useAuth();
+
+  const visibleSections = navigationSections.filter(
+    (s) => !s.adminOnly || role === "Admin"
+  );
 
   function handleNavigate(item: NavItem) {
     onNavigate?.(item);
@@ -40,7 +44,7 @@ export function Sidebar({ open = false, onClose, onNavigate, className }: Sideba
           className="px-1.5 py-1.5 flex flex-col gap-3"
           aria-label="Settings navigation"
         >
-          {navigationSections.map((section, index) => (
+          {visibleSections.map((section, index) => (
             <div key={section.id}>
               {index > 0 && (
                 <div className="mx-1.5 mb-3 border-t border-sidebar-border" />

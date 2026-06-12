@@ -59,11 +59,11 @@ An "Administration" section at the bottom of the sidebar containing a "Users" na
 
 ### Acceptance criteria
 
-- [ ] Logged-in Admin sees an "Administration" section in the sidebar with a "Users" item
-- [ ] Logged-in Staff user does not see the "Administration" section at all
-- [ ] Navigating to Users shows a table of all admin users
-- [ ] Each row displays Full Name, Email, a Role badge, and an Active/Inactive badge
-- [ ] The table re-fetches correctly when the page is revisited
+- [x] Logged-in Admin sees an "Administration" section in the sidebar with a "Users" item
+- [x] Logged-in Staff user does not see the "Administration" section at all
+- [x] Navigating to Users shows a table of all admin users
+- [x] Each row displays Full Name, Email, a Role badge, and an Active/Inactive badge
+- [x] The table re-fetches correctly when the page is revisited
 
 ---
 

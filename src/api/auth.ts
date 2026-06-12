@@ -1,5 +1,5 @@
 import { apiClient } from "./client"
-import type { LoginRequest, LoginResponse } from "@/types/auth"
+import type { LoginRequest, LoginResponse, AdminUser } from "@/types/auth"
 import type { ApiResponse } from "@/types/api"
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
@@ -8,4 +8,9 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
     data
   )
   return response.data.data!
+}
+
+export async function getUsers(): Promise<AdminUser[]> {
+  const response = await apiClient.get<ApiResponse<AdminUser[]>>("/api/v1/auth/users")
+  return response.data.data ?? []
 }

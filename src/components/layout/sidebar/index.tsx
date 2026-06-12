@@ -4,6 +4,8 @@ import type { NavItem } from "@/types/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSection } from "./SidebarSection";
+import { useAuth } from "@/context/AuthContext";
+import { LogOut } from "lucide-react";
 
 interface SidebarProps {
   open?: boolean;
@@ -13,6 +15,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open = false, onClose, onNavigate, className }: SidebarProps) {
+  const { logout } = useAuth();
+
   function handleNavigate(item: NavItem) {
     onNavigate?.(item);
     onClose?.();
@@ -49,6 +53,17 @@ export function Sidebar({ open = false, onClose, onNavigate, className }: Sideba
           ))}
         </nav>
       </ScrollArea>
+
+      <div className="border-t border-sidebar-border px-1.5 py-1.5">
+        <button
+          type="button"
+          onClick={logout}
+          className="group w-full flex items-center gap-2.5 rounded-md px-2.5 py-2 transition-colors cursor-pointer text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+        >
+          <LogOut className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-sidebar-accent-foreground" />
+          <span className="text-sm truncate">Logout</span>
+        </button>
+      </div>
     </aside>
   );
 }

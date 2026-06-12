@@ -16,10 +16,8 @@ import { getNationalities } from "@/api/nationalities"
 import {
   ApplicationStatus,
   APPLICATION_STATUS_LABELS,
-  PaymentStatus,
   PAYMENT_STATUS_LABELS,
 } from "@/types/application"
-import type { VisaApplicationDetail } from "@/types/application"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,7 +84,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-const TERMINAL_STATUSES = new Set([
+const TERMINAL_STATUSES = new Set<ApplicationStatus>([
   ApplicationStatus.Approved,
   ApplicationStatus.Rejected,
   ApplicationStatus.Cancelled,
@@ -112,7 +110,7 @@ const ALLOWED_TRANSITIONS: Partial<Record<ApplicationStatus, ApplicationStatus[]
   ],
 }
 
-const REASON_REQUIRED = new Set([
+const REASON_REQUIRED = new Set<ApplicationStatus>([
   ApplicationStatus.Rejected,
   ApplicationStatus.RequiresAction,
 ])

@@ -1,11 +1,12 @@
-export enum ApplicationStatus {
-  Submitted = 0,
-  UnderReview = 1,
-  Approved = 2,
-  Rejected = 3,
-  RequiresAction = 4,
-  Cancelled = 5,
-}
+export const ApplicationStatus = {
+  Submitted: 0,
+  UnderReview: 1,
+  Approved: 2,
+  Rejected: 3,
+  RequiresAction: 4,
+  Cancelled: 5,
+} as const
+export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof ApplicationStatus]
 
 export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   [ApplicationStatus.Submitted]: "Submitted",
@@ -16,11 +17,12 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   [ApplicationStatus.Cancelled]: "Cancelled",
 }
 
-export enum PaymentStatus {
-  Pending = 0,
-  Succeeded = 1,
-  Failed = 2,
-}
+export const PaymentStatus = {
+  Pending: 0,
+  Succeeded: 1,
+  Failed: 2,
+} as const
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.Pending]: "Pending",

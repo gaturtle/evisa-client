@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -55,8 +55,8 @@ export function NationalityFormDialog({
   const isEdit = !!nationality
   const queryClient = useQueryClient()
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormValues, unknown, FormValues>({
+    resolver: zodResolver(formSchema) as unknown as Resolver<FormValues, unknown, FormValues>,
     defaultValues: {
       origName: "",
       vietnameseName: "",

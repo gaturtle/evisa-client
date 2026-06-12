@@ -8,6 +8,8 @@ import { VisaTypesPage } from "@/pages/visa-types";
 import { VisaProcessingsPage } from "@/pages/visa-processings";
 import { ApplicationsPage } from "@/pages/applications";
 import { HolidaysPage } from "@/pages/holidays";
+import { LoginPage } from "@/pages/login";
+import { useAuth } from "@/context/AuthContext";
 
 function renderPage(item: NavItem) {
   switch (item.id) {
@@ -35,8 +37,11 @@ function renderPage(item: NavItem) {
 }
 
 function App() {
+  const { token } = useAuth();
   const [activeItem, setActiveItem] = useState<NavItem | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (!token) return <LoginPage />;
 
   return (
     <div className="flex w-full h-screen bg-background text-foreground overflow-hidden">

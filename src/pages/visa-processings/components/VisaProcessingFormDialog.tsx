@@ -28,7 +28,18 @@ import { Input } from "@/components/ui/input"
 const formSchema = z.object({
   description: z.string().min(1, "Description is required"),
   price: z.coerce.number().positive("Price must be a positive number"),
-})
+  minDays: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+    z.number().int().positive("Min days must be a positive integer").nullable()
+  ),
+  maxDays: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+    z.number().int().positive("Max days must be a positive integer").nullable()
+  ),
+}).refine(
+  (d) => d.minDays == null || d.maxDays == null || d.minDays <= d.maxDays,
+  { message: "Min days must not exceed max days", path: ["maxDays"] }
+)
 
 type FormValues = z.infer<typeof formSchema>
 
@@ -56,6 +67,8 @@ export function VisaProcessingFormDialog({
       form.reset({
         description: visaProcessing?.description ?? "",
         price: visaProcessing?.price ?? 0,
+        minDays: visaProcessing?.minDays ?? null,
+        maxDays: visaProcessing?.maxDays ?? null,
       })
     }
   }, [open, visaProcessing, form])
@@ -111,6 +124,50 @@ export function VisaProcessingFormDialog({
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="minDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Min Days</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="e.g. 3"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? null : e.target.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="maxDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Max Days</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="e.g. 7"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? null : e.target.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <DialogFooter>
               <Button

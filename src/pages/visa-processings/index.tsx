@@ -78,19 +78,21 @@ export function VisaProcessingsPage() {
             <colgroup>
               <col style={{ width: 240 }} />
               <col style={{ width: 120 }} />
+              <col style={{ width: 140 }} />
               <col style={{ width: 90 }} />
             </colgroup>
             <TableHeader className="sticky top-0 z-10 bg-muted/80">
               <TableRow className="hover:bg-muted/80">
                 <TableHead className="px-4 text-muted-foreground/70">Description</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Price</TableHead>
+                <TableHead className="px-4 text-muted-foreground/70">Processing Days</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={3} className="px-4 py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
                     Loading…
                   </TableCell>
                 </TableRow>
@@ -98,7 +100,7 @@ export function VisaProcessingsPage() {
 
               {isError && (
                 <TableRow>
-                  <TableCell colSpan={3} className="px-4 py-12 text-center text-destructive">
+                  <TableCell colSpan={4} className="px-4 py-12 text-center text-destructive">
                     Failed to load processing options.
                   </TableCell>
                 </TableRow>
@@ -106,7 +108,7 @@ export function VisaProcessingsPage() {
 
               {!isLoading && !isError && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="px-4 py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
                     No processing options found.
                   </TableCell>
                 </TableRow>
@@ -124,6 +126,15 @@ export function VisaProcessingsPage() {
                     </TableCell>
                     <TableCell className="px-4 text-foreground/80">
                       ${visaProcessing.price.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="px-4 text-foreground/80">
+                      {visaProcessing.minDays != null && visaProcessing.maxDays != null
+                        ? `${visaProcessing.minDays}–${visaProcessing.maxDays} days`
+                        : visaProcessing.minDays != null
+                        ? `≥ ${visaProcessing.minDays} days`
+                        : visaProcessing.maxDays != null
+                        ? `≤ ${visaProcessing.maxDays} days`
+                        : <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="px-4">
                       <div className="flex items-center gap-1">

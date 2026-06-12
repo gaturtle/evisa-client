@@ -6,6 +6,8 @@ import { NationalitiesPage } from "@/pages/nationalities";
 import { ExemptionsPage } from "@/pages/exemptions";
 import { VisaTypesPage } from "@/pages/visa-types";
 import { VisaProcessingsPage } from "@/pages/visa-processings";
+import { ApplicationsPage } from "@/pages/applications";
+import { HolidaysPage } from "@/pages/holidays";
 
 function renderPage(item: NavItem) {
   switch (item.id) {
@@ -17,6 +19,10 @@ function renderPage(item: NavItem) {
       return <VisaTypesPage />;
     case "Processing-setup":
       return <VisaProcessingsPage />;
+    case "holidays":
+      return <HolidaysPage />;
+    case "Application-list":
+      return <ApplicationsPage />;
     default:
       return (
         <div className="px-8 py-6 max-w-2xl">

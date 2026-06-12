@@ -1,7 +1,7 @@
 import type { NavSection } from "@/types/navigation";
 import {
   Building2,
-  Clock,
+  CalendarDays,
   FileText,
   Tag,
   UserCheck,
@@ -24,9 +24,9 @@ export const navigationSections: NavSection[] = [
         icon: FileText,
       },
       {
-        id: "slas",
-        label: "SLAs",
-        icon: Clock,
+        id: "holidays",
+        label: "Holidays",
+        icon: CalendarDays,
       },
     ],
   },
@@ -47,12 +47,12 @@ export const navigationSections: NavSection[] = [
     ],
   },
   {
-    id: "administration",
-    title: "Administration",
+    id: "Application",
+    title: "Application",
     items: [
       {
-        id: "workspace",
-        label: "Workspace",
+        id: "Application-list",
+        label: "Applications",
         icon: Building2,
       },
       {

@@ -12,7 +12,6 @@ import {
 } from "@/api/applications"
 import { getVisaTypes } from "@/api/visa-types"
 import { getVisaProcessings } from "@/api/visa-processings"
-import { getNationalities } from "@/api/nationalities"
 import {
   ApplicationStatus,
   APPLICATION_STATUS_LABELS,
@@ -31,7 +30,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sheet,
   SheetCloseButton,
@@ -41,6 +39,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { EditApplicationForm } from "./EditApplicationForm"
+import { ApplicantPhotos } from "./ApplicantPhotos"
 
 const STATUS_BADGE_CLASSES: Record<ApplicationStatus, string> = {
   [ApplicationStatus.Submitted]:
@@ -124,7 +123,7 @@ function ApplicantRow({
   applicationId,
   isApproved,
 }: {
-  applicant: { id: string; firstName: string; lastName: string; documentPath: string | null }
+  applicant: { id: string; firstName: string; lastName: string; portraitPhotoPath: string | null; passportPhotoPath: string | null; documentPath: string | null }
   index: number
   applicationId: string
   isApproved: boolean
@@ -159,36 +158,42 @@ function ApplicantRow({
   const hasDocument = !!applicant.documentPath
 
   return (
-    <div className="flex items-center gap-4 px-3 py-2.5 text-sm">
-      <span className="w-5 shrink-0 text-center text-xs text-muted-foreground/60">{index + 1}</span>
-      <span className="flex-1 font-medium text-foreground/80">
-        {applicant.firstName} {applicant.lastName}
-      </span>
-      {isApproved && (
-        <>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <button
-            disabled={uploadMutation.isPending}
-            onClick={() => fileInputRef.current?.click()}
-            className="shrink-0 rounded p-0.5 text-muted-foreground/60 hover:text-foreground disabled:opacity-40"
-            title={hasDocument ? "Replace document" : "Upload document"}
-          >
-            {uploadMutation.isPending ? (
-              <span className="text-xs">…</span>
-            ) : hasDocument ? (
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-            ) : (
-              <Paperclip className="h-4 w-4" />
-            )}
-          </button>
-        </>
-      )}
+    <div className="flex flex-col px-3 py-3 text-sm">
+      <div className="flex items-center gap-3">
+        <span className="w-5 shrink-0 text-center text-xs text-muted-foreground/60">{index + 1}</span>
+        <span className="flex-1 font-medium text-foreground/80">
+          {applicant.firstName} {applicant.lastName}
+        </span>
+        {isApproved && (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <button
+              disabled={uploadMutation.isPending}
+              onClick={() => fileInputRef.current?.click()}
+              className="shrink-0 rounded p-0.5 text-muted-foreground/60 hover:text-foreground disabled:opacity-40"
+              title={hasDocument ? "Replace document" : "Upload document"}
+            >
+              {uploadMutation.isPending ? (
+                <span className="text-xs">…</span>
+              ) : hasDocument ? (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              ) : (
+                <Paperclip className="h-4 w-4" />
+              )}
+            </button>
+          </>
+        )}
+      </div>
+      <ApplicantPhotos
+        portraitPhotoPath={applicant.portraitPhotoPath}
+        passportPhotoPath={applicant.passportPhotoPath}
+      />
     </div>
   )
 }
@@ -212,11 +217,6 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
   const { data: visaProcessings = [] } = useQuery({
     queryKey: ["visa-processings"],
     queryFn: getVisaProcessings,
-  })
-
-  const { data: nationalities = [] } = useQuery({
-    queryKey: ["nationalities"],
-    queryFn: getNationalities,
   })
 
   const statusMutation = useMutation({
@@ -271,7 +271,6 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
         detail={detail}
         visaTypes={visaTypes}
         visaProcessings={visaProcessings}
-        nationalities={nationalities}
         onCancel={() => setView("detail")}
         onSuccess={() => setView("detail")}
       />
@@ -285,7 +284,7 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
     detail.processingOptionId
 
   return (
-    <ScrollArea className="h-full">
+    <div className="h-full overflow-y-auto">
       <Section title="Contact Information">
         <div className="grid grid-cols-2 gap-x-6 gap-y-3">
           <Field label="Full Name" value={detail.contactFullName} />
@@ -506,7 +505,7 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
           )}
         </div>
       </Section>
-    </ScrollArea>
+    </div>
   )
 }
 

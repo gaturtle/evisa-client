@@ -24,11 +24,11 @@ A login page that exchanges email + password for a JWT, stores the token in `loc
 
 ### Acceptance criteria
 
-- [ ] Visiting the app with no stored token shows the login page, not the dashboard
-- [ ] Submitting valid credentials navigates to the dashboard and stores the token in `localStorage`
-- [ ] Submitting invalid credentials shows an inline error message without leaving the login page
-- [ ] Refreshing the browser while logged in keeps the user on the dashboard (token persists)
-- [ ] All API requests include `Authorization: Bearer <token>` in the request headers
+- [x] Visiting the app with no stored token shows the login page, not the dashboard
+- [x] Submitting valid credentials navigates to the dashboard and stores the token in `localStorage`
+- [x] Submitting invalid credentials shows an inline error message without leaving the login page
+- [x] Refreshing the browser while logged in keeps the user on the dashboard (token persists)
+- [x] All API requests include `Authorization: Bearer <token>` in the request headers
 
 ---
 
@@ -95,9 +95,9 @@ The Edit action (pencil icon) on each table row opens the same form dialog in ed
 
 ### Acceptance criteria
 
-- [ ] Clicking Edit on a row opens the dialog pre-filled with the user's current Full Name, Role, and Is Active state
-- [ ] Email and Password fields are not shown in edit mode
-- [ ] Saving edits updates the user record, closes the dialog, refreshes the table, and shows a success toast
-- [ ] Setting Is Active to false deactivates the account (reflected in the Status badge after save)
-- [ ] Clicking Delete on a row opens a confirmation dialog; confirming deletes the user and refreshes the table
-- [ ] Edit and Delete actions on the current user's own row are visually disabled and non-interactive
+- [x] Clicking Edit on a row opens the dialog pre-filled with the user's current Full Name, Role, and Is Active state
+- [x] Email and Password fields are not shown in edit mode
+- [x] Saving edits updates the user record, closes the dialog, refreshes the table, and shows a success toast
+- [x] Setting Is Active to false deactivates the account (reflected in the Status badge after save)
+- [x] Clicking Delete on a row opens a confirmation dialog; confirming deletes the user and refreshes the table
+- [x] Edit and Delete actions on the current user's own row are visually disabled and non-interactive

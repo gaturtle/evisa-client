@@ -9,11 +9,10 @@ import { updateApplication } from "@/api/applications"
 import type { UpdateApplicationRequest, VisaApplicationDetail } from "@/types/application"
 import type { VisaType } from "@/types/visa-type"
 import type { VisaProcessing } from "@/types/visa-processing"
-import type { VisaNationality } from "@/types/nationality"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ApplicantPhotos } from "./ApplicantPhotos"
 
 const applicantSchema = z.object({
   firstName: z.string().min(1, "Required"),
@@ -41,7 +40,6 @@ interface EditApplicationFormProps {
   detail: VisaApplicationDetail
   visaTypes: VisaType[]
   visaProcessings: VisaProcessing[]
-  nationalities: VisaNationality[]
   onCancel: () => void
   onSuccess: () => void
 }
@@ -68,7 +66,6 @@ export function EditApplicationForm({
   detail,
   visaTypes,
   visaProcessings,
-  nationalities,
   onCancel,
   onSuccess,
 }: EditApplicationFormProps) {
@@ -131,7 +128,7 @@ export function EditApplicationForm({
   const { errors } = form.formState
 
   return (
-    <ScrollArea className="flex-1">
+    <div className="h-full overflow-y-auto">
       <form onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
         <div className="border-b px-5 py-4">
           <SectionHeading title="Contact Information" />
@@ -229,7 +226,11 @@ export function EditApplicationForm({
                     </Button>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <ApplicantPhotos
+                  portraitPhotoPath={detail.applicants[i]?.portraitPhotoPath ?? null}
+                  passportPhotoPath={detail.applicants[i]?.passportPhotoPath ?? null}
+                />
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   <div className="flex flex-col gap-1.5">
                     <Label className="text-xs text-muted-foreground">First Name *</Label>
                     <Input
@@ -245,19 +246,6 @@ export function EditApplicationForm({
                       className="h-8 text-sm"
                     />
                     <FieldError message={errors.applicants?.[i]?.lastName?.message} />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs text-muted-foreground">Nationality *</Label>
-                    <select
-                      {...form.register(`applicants.${i}.nationality`)}
-                      className={selectClass}
-                    >
-                      <option value="">Select…</option>
-                      {nationalities.map((n) => (
-                        <option key={n.id} value={n.origName}>{n.origName}</option>
-                      ))}
-                    </select>
-                    <FieldError message={errors.applicants?.[i]?.nationality?.message} />
                   </div>
                 </div>
               </div>
@@ -284,6 +272,6 @@ export function EditApplicationForm({
           </Button>
         </div>
       </form>
-    </ScrollArea>
+    </div>
   )
 }

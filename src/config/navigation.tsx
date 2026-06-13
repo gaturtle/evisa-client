@@ -1,13 +1,5 @@
 import type { NavSection } from "@/types/navigation";
-import {
-  Building2,
-  CalendarDays,
-  FileText,
-  Shield,
-  Tag,
-  UserCheck,
-  Users,
-} from "lucide-react";
+import { Building2, CalendarDays, FileText, Shield, Tag } from "lucide-react";
 
 export const navigationSections: NavSection[] = [
   {
@@ -18,11 +10,6 @@ export const navigationSections: NavSection[] = [
         id: "nationality-labels",
         label: "Nationalities",
         icon: Tag,
-      },
-      {
-        id: "nationality-exemption",
-        label: "Exemption",
-        icon: FileText,
       },
       {
         id: "holidays",
@@ -55,16 +42,6 @@ export const navigationSections: NavSection[] = [
         id: "Application-list",
         label: "Applications",
         icon: Building2,
-      },
-      {
-        id: "teams",
-        label: "Teams",
-        icon: Users,
-      },
-      {
-        id: "members",
-        label: "Members",
-        icon: UserCheck,
       },
     ],
   },

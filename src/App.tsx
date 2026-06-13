@@ -3,7 +3,6 @@ import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import type { NavItem } from "@/types/navigation";
 import { NationalitiesPage } from "@/pages/nationalities";
-import { ExemptionsPage } from "@/pages/exemptions";
 import { VisaTypesPage } from "@/pages/visa-types";
 import { VisaProcessingsPage } from "@/pages/visa-processings";
 import { ApplicationsPage } from "@/pages/applications";
@@ -16,8 +15,6 @@ function renderPage(item: NavItem) {
   switch (item.id) {
     case "nationality-labels":
       return <NationalitiesPage />;
-    case "nationality-exemption":
-      return <ExemptionsPage />;
     case "Type-setup":
       return <VisaTypesPage />;
     case "Processing-setup":

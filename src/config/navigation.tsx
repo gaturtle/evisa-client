@@ -5,7 +5,9 @@ import { VisaProcessingsPage } from "@/pages/visa-processings";
 import { ApplicationsPage } from "@/pages/applications";
 import { HolidaysPage } from "@/pages/holidays";
 import { UsersPage } from "@/pages/users";
-import { Building2, CalendarDays, FileText, Shield, Tag } from "lucide-react";
+import { CategoriesPage } from "@/pages/categories";
+import { PostsPage } from "@/pages/posts";
+import { Building2, CalendarDays, FileText, FolderOpen, Newspaper, Shield, Tag } from "lucide-react";
 
 export const navigationSections: NavSection[] = [
   {
@@ -53,6 +55,24 @@ export const navigationSections: NavSection[] = [
         label: "Applications",
         icon: Building2,
         component: ApplicationsPage,
+      },
+    ],
+  },
+  {
+    id: "content",
+    title: "Content",
+    items: [
+      {
+        id: "categories",
+        label: "Categories",
+        icon: FolderOpen,
+        component: CategoriesPage,
+      },
+      {
+        id: "posts",
+        label: "Posts",
+        icon: Newspaper,
+        component: PostsPage,
       },
     ],
   },

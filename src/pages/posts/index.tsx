@@ -168,7 +168,7 @@ export function PostsPage({ onNavigate }: PostsPageProps = {}) {
                     {post.title}
                   </TableCell>
                   <TableCell className="px-4 text-foreground/60">
-                    {post.category?.name ?? "—"}
+                    {post.categoryName ?? post.category?.name ?? "—"}
                   </TableCell>
                   <TableCell className="px-4">
                     {post.status === "published" ? (

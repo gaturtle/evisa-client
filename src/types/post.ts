@@ -4,11 +4,12 @@ export interface Post {
   id: string
   title: string
   slug: string
-  content: string
+  content?: string
   thumbnailUrl?: string | null
   status: PostStatus
   categoryId: string
-  category: { id: string; name: string; slug: string }
+  categoryName?: string
+  category?: { id: string; name: string; slug: string }
   createdAt: string
   updatedAt: string
 }

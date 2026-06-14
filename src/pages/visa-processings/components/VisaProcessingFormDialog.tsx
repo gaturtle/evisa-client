@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input"
 
 const formSchema = z.object({
   description: z.string().min(1, "Description is required"),
-  price: z.coerce.number().positive("Price must be a positive number"),
+  price: z.coerce.number().nonnegative("Price must be 0 or greater"),
   minDays: z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
     z.number().int().positive("Min days must be a positive integer").nullable()

@@ -24,6 +24,7 @@ import {
 import { TableContainer } from "@/components/ui/table-container"
 import { Combobox } from "@/components/ui/combobox"
 import { DeletePostDialog } from "@/pages/posts/components/DeletePostDialog"
+import { PostForm } from "@/pages/posts/components/PostForm"
 
 export type PostView = "list" | "create" | "edit"
 
@@ -69,6 +70,7 @@ export function PostsPage({ onNavigate }: PostsPageProps = {}) {
 
   function handleCreatePost() {
     setView("create")
+    setEditPost(null)
     onNavigate?.("create")
   }
 
@@ -78,10 +80,14 @@ export function PostsPage({ onNavigate }: PostsPageProps = {}) {
     onNavigate?.("edit", post)
   }
 
-  // Phase 3 will intercept view changes and render the form.
-  // For now, suppress unused-variable warnings by referencing them:
-  void view
-  void editPost
+  function handleBack() {
+    setView("list")
+    setEditPost(null)
+  }
+
+  if (view === "create" || view === "edit") {
+    return <PostForm post={editPost ?? undefined} onBack={handleBack} />
+  }
 
   return (
     <div className="flex flex-col flex-1 min-h-0 px-8 py-6">

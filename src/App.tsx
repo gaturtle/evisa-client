@@ -2,50 +2,25 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import type { NavItem } from "@/types/navigation";
-import { NationalitiesPage } from "@/pages/nationalities";
-import { VisaTypesPage } from "@/pages/visa-types";
-import { VisaProcessingsPage } from "@/pages/visa-processings";
-import { ApplicationsPage } from "@/pages/applications";
-import { HolidaysPage } from "@/pages/holidays";
-import { UsersPage } from "@/pages/users";
+import { navigationSections } from "@/config/navigation";
 import { LoginPage } from "@/pages/login";
 import { useAuth } from "@/context/AuthContext";
 
-function renderPage(item: NavItem) {
-  switch (item.id) {
-    case "nationality-labels":
-      return <NationalitiesPage />;
-    case "Type-setup":
-      return <VisaTypesPage />;
-    case "Processing-setup":
-      return <VisaProcessingsPage />;
-    case "holidays":
-      return <HolidaysPage />;
-    case "Application-list":
-      return <ApplicationsPage />;
-    case "users":
-      return <UsersPage />;
-    default:
-      return (
-        <div className="px-8 py-6 max-w-2xl">
-          <h1 className="text-2xl font-semibold text-foreground mb-1">
-            {item.label}
-          </h1>
-        </div>
-      );
-  }
-}
+const defaultItem = navigationSections
+  .flatMap((s) => s.items)
+  .find((item) => item.id === "Application-list")!;
 
 function App() {
   const { token } = useAuth();
-  const [activeItem, setActiveItem] = useState<NavItem | null>(null);
+  const [activeItem, setActiveItem] = useState<NavItem>(defaultItem);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!token) return <LoginPage />;
 
+  const PageComponent = activeItem.component;
+
   return (
     <div className="flex w-full h-screen bg-background text-foreground overflow-hidden">
-      {/* Backdrop — mobile only, shown when sidebar is open */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/40 lg:hidden"
@@ -60,7 +35,6 @@ function App() {
       />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile top bar */}
         <header className="flex items-center gap-3 px-4 py-3 border-b border-border bg-background lg:hidden shrink-0">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -70,16 +44,18 @@ function App() {
             <Menu className="h-5 w-5" />
           </button>
           <span className="text-sm font-medium text-foreground">
-            {activeItem?.label ?? "Evisa settings"}
+            {activeItem.label}
           </span>
         </header>
 
         <main className="flex-1 overflow-hidden flex flex-col">
-          {activeItem ? (
-            renderPage(activeItem)
+          {PageComponent ? (
+            <PageComponent />
           ) : (
-            <div className="flex flex-1 items-center justify-center text-muted-foreground">
-              <p className="text-sm">Select a settings item from the sidebar</p>
+            <div className="px-8 py-6 max-w-2xl">
+              <h1 className="text-2xl font-semibold text-foreground mb-1">
+                {activeItem.label}
+              </h1>
             </div>
           )}
         </main>

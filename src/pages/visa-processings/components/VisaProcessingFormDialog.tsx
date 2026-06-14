@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { createVisaProcessing, updateVisaProcessing } from "@/api/visa-processings"
 import type { VisaProcessing } from "@/types/visa-processing"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ const formSchema = z.object({
     (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
     z.number().int().positive("Max days must be a positive integer").nullable()
   ),
+  isEmergency: z.boolean(),
 }).refine(
   (d) => d.minDays == null || d.maxDays == null || d.minDays <= d.maxDays,
   { message: "Min days must not exceed max days", path: ["maxDays"] }
@@ -59,7 +61,7 @@ export function VisaProcessingFormDialog({
 
   const form = useForm<FormValues, unknown, FormValues>({
     resolver: zodResolver(formSchema) as unknown as Resolver<FormValues, unknown, FormValues>,
-    defaultValues: { description: "", price: 0 },
+    defaultValues: { description: "", price: 0, isEmergency: false },
   })
 
   useEffect(() => {
@@ -69,6 +71,7 @@ export function VisaProcessingFormDialog({
         price: visaProcessing?.price ?? 0,
         minDays: visaProcessing?.minDays ?? null,
         maxDays: visaProcessing?.maxDays ?? null,
+        isEmergency: visaProcessing?.isEmergency ?? false,
       })
     }
   }, [open, visaProcessing, form])
@@ -168,6 +171,22 @@ export function VisaProcessingFormDialog({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="isEmergency"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal cursor-pointer">Emergency processing</FormLabel>
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button

@@ -4,6 +4,7 @@ export interface VisaProcessing {
   price: number
   minDays: number | null
   maxDays: number | null
+  isEmergency: boolean
 }
 
 export interface CreateVisaProcessingRequest {
@@ -11,6 +12,7 @@ export interface CreateVisaProcessingRequest {
   price: number
   minDays: number | null
   maxDays: number | null
+  isEmergency: boolean
 }
 
 export interface UpdateVisaProcessingRequest {
@@ -18,4 +20,5 @@ export interface UpdateVisaProcessingRequest {
   price: number
   minDays: number | null
   maxDays: number | null
+  isEmergency: boolean
 }

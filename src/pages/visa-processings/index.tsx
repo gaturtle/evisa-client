@@ -2,6 +2,8 @@ import { useState } from "react"
 import { Pencil, Plus, Search, Trash2 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 
+import { Badge } from "@/components/ui/badge"
+
 import { getVisaProcessings } from "@/api/visa-processings"
 import type { VisaProcessing } from "@/types/visa-processing"
 import { Button } from "@/components/ui/button"
@@ -79,6 +81,7 @@ export function VisaProcessingsPage() {
               <col style={{ width: 240 }} />
               <col style={{ width: 120 }} />
               <col style={{ width: 140 }} />
+              <col style={{ width: 120 }} />
               <col style={{ width: 90 }} />
             </colgroup>
             <TableHeader className="sticky top-0 z-10 bg-muted/80">
@@ -86,13 +89,14 @@ export function VisaProcessingsPage() {
                 <TableHead className="px-4 text-muted-foreground/70">Description</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Price</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Processing Days</TableHead>
+                <TableHead className="px-4 text-muted-foreground/70">Emergency</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
                     Loading…
                   </TableCell>
                 </TableRow>
@@ -100,7 +104,7 @@ export function VisaProcessingsPage() {
 
               {isError && (
                 <TableRow>
-                  <TableCell colSpan={4} className="px-4 py-12 text-center text-destructive">
+                  <TableCell colSpan={5} className="px-4 py-12 text-center text-destructive">
                     Failed to load processing options.
                   </TableCell>
                 </TableRow>
@@ -108,7 +112,7 @@ export function VisaProcessingsPage() {
 
               {!isLoading && !isError && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
                     No processing options found.
                   </TableCell>
                 </TableRow>
@@ -134,6 +138,11 @@ export function VisaProcessingsPage() {
                         ? `≥ ${visaProcessing.minDays} days`
                         : visaProcessing.maxDays != null
                         ? `≤ ${visaProcessing.maxDays} days`
+                        : <span className="text-muted-foreground">—</span>}
+                    </TableCell>
+                    <TableCell className="px-4">
+                      {visaProcessing.isEmergency
+                        ? <Badge variant="destructive" className="text-xs">Emergency</Badge>
                         : <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="px-4">

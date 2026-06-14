@@ -1,4 +1,5 @@
 import { useState } from "react"
+import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -10,7 +11,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 export interface ComboboxOption {
   value: string
@@ -43,9 +43,10 @@ export function Combobox({
   const selected = options.find((o) => o.value === value)
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+      <PopoverPrimitive.Trigger asChild>
         <Button
+          type="button"
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -55,8 +56,16 @@ export function Combobox({
           {selected ? selected.label : placeholder}
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+      </PopoverPrimitive.Trigger>
+      <PopoverPrimitive.Content
+        className={cn(
+          "z-50 w-[--radix-popover-trigger-width] p-0 rounded-md border bg-popover text-popover-foreground shadow-md outline-none",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2"
+        )}
+        align="start"
+        sideOffset={4}
+      >
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
@@ -80,7 +89,7 @@ export function Combobox({
             </CommandGroup>
           </CommandList>
         </Command>
-      </PopoverContent>
-    </Popover>
+      </PopoverPrimitive.Content>
+    </PopoverPrimitive.Root>
   )
 }

@@ -239,7 +239,7 @@ export function PostForm({ post, onBack }: PostFormProps) {
   const isInsideTable = editor?.isActive("table") ?? false;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 px-8 py-6">
+    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto px-8 py-6">
       <div className="mb-5 shrink-0 flex items-center gap-3">
         <Button
           variant="ghost"
@@ -575,7 +575,7 @@ export function PostForm({ post, onBack }: PostFormProps) {
                     {/* Editor area */}
                     <EditorContent
                       editor={editor}
-                      className="prose prose-sm max-w-none px-3 py-2 min-h-48 focus-within:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-44 [&_.ProseMirror_p]:my-1 [&_.ProseMirror_h1]:text-xl [&_.ProseMirror_h1]:font-bold [&_.ProseMirror_h2]:text-lg [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:text-base [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-5 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-5 [&_.ProseMirror_a]:text-primary [&_.ProseMirror_a]:underline [&_.ProseMirror_table]:border-collapse [&_.ProseMirror_table]:w-full [&_.ProseMirror_td]:border [&_.ProseMirror_td]:border-border [&_.ProseMirror_td]:p-1.5 [&_.ProseMirror_th]:border [&_.ProseMirror_th]:border-border [&_.ProseMirror_th]:p-1.5 [&_.ProseMirror_th]:bg-muted [&_.ProseMirror_th]:font-semibold [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded"
+                      className="prose prose-sm max-w-none px-3 py-2 min-h-48 max-h-96 overflow-y-auto focus-within:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-44 [&_.ProseMirror_p]:my-1 [&_.ProseMirror_h1]:text-xl [&_.ProseMirror_h1]:font-bold [&_.ProseMirror_h2]:text-lg [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:text-base [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-5 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-5 [&_.ProseMirror_a]:text-primary [&_.ProseMirror_a]:underline [&_.ProseMirror_table]:border-collapse [&_.ProseMirror_table]:w-full [&_.ProseMirror_td]:border [&_.ProseMirror_td]:border-border [&_.ProseMirror_td]:p-1.5 [&_.ProseMirror_th]:border [&_.ProseMirror_th]:border-border [&_.ProseMirror_th]:p-1.5 [&_.ProseMirror_th]:bg-muted [&_.ProseMirror_th]:font-semibold [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded"
                     />
                   </div>
                 </FormControl>

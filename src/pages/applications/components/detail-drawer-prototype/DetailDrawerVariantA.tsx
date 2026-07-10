@@ -1,17 +1,9 @@
+// PROTOTYPE — Variant A: tabbed sheet. Same right slide-over shell as production,
+// but content is split into tabs instead of one long scroll, and the header is a
+// compact identity strip (avatar initials + inline meta) instead of stacked title/desc.
 import { useRef, useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 import { CheckCircle2, Download, Paperclip, Pencil, Trash2 } from "lucide-react"
 
-import {
-  getApplicationDetail,
-  updateApplicationStatus,
-  uploadApplicantDocument,
-  downloadVisaDocument,
-  deleteApplication,
-} from "@/api/applications"
-import { getVisaTypes } from "@/api/visa-types"
-import { getVisaProcessings } from "@/api/visa-processings"
 import {
   ApplicationStatus,
   APPLICATION_STATUS_LABELS,
@@ -30,8 +22,15 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetCloseButton, SheetContent } from "@/components/ui/sheet"
-import { EditApplicationForm } from "./EditApplicationForm"
-import { ApplicantPhotos } from "./ApplicantPhotos"
+import { EditApplicationForm } from "../EditApplicationForm"
+import { ApplicantPhotos } from "../ApplicantPhotos"
+import {
+  ALLOWED_TRANSITIONS,
+  formatDate,
+  REASON_REQUIRED,
+  TERMINAL_STATUSES,
+  useApplicationDetailState,
+} from "./useApplicationDetailState"
 
 const STATUS_DOT: Record<ApplicationStatus, string> = {
   [ApplicationStatus.Submitted]: "bg-blue-500",
@@ -54,96 +53,42 @@ function initials(name: string) {
     .join("")
 }
 
-function formatDate(iso: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(iso))
-}
-
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm text-foreground">{value ?? <span className="italic text-muted-foreground/60">—</span>}</span>
+      <span className="text-sm text-foreground">
+        {value ?? <span className="italic text-muted-foreground/60">—</span>}
+      </span>
     </div>
   )
 }
 
-const TERMINAL_STATUSES = new Set<ApplicationStatus>([
-  ApplicationStatus.Approved,
-  ApplicationStatus.Rejected,
-  ApplicationStatus.Cancelled,
-])
-
-const ALLOWED_TRANSITIONS: Partial<Record<ApplicationStatus, ApplicationStatus[]>> = {
-  [ApplicationStatus.Submitted]: [
-    ApplicationStatus.UnderReview,
-    ApplicationStatus.RequiresAction,
-    ApplicationStatus.Rejected,
-    ApplicationStatus.Cancelled,
-  ],
-  [ApplicationStatus.UnderReview]: [
-    ApplicationStatus.Approved,
-    ApplicationStatus.Rejected,
-    ApplicationStatus.RequiresAction,
-    ApplicationStatus.Cancelled,
-  ],
-  [ApplicationStatus.RequiresAction]: [
-    ApplicationStatus.UnderReview,
-    ApplicationStatus.Rejected,
-    ApplicationStatus.Cancelled,
-  ],
-}
-
-const REASON_REQUIRED = new Set<ApplicationStatus>([
-  ApplicationStatus.Rejected,
-  ApplicationStatus.RequiresAction,
-])
-
 const selectClass =
   "h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
 
-function ApplicantRow({
+function ApplicantTabRow({
   applicant,
   index,
-  applicationId,
   isApproved,
+  onUpload,
+  uploadPending,
 }: {
   applicant: { id: string; firstName: string; lastName: string; portraitPhotoPath: string | null; passportPhotoPath: string | null; documentPath: string | null }
   index: number
-  applicationId: string
   isApproved: boolean
+  onUpload: (applicantId: string, file: File) => void
+  uploadPending: boolean
 }) {
-  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => uploadApplicantDocument(applicationId, applicant.id, file),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["application-detail", applicationId] })
-      toast.success(`Document uploaded for ${applicant.firstName} ${applicant.lastName}.`)
-    },
-    onError: () => toast.error(`Failed to upload document for ${applicant.firstName} ${applicant.lastName}.`),
-  })
+  const hasDocument = !!applicant.documentPath
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     e.target.value = ""
     if (!file) return
-    if (file.type !== "application/pdf") {
-      toast.error("Only PDF files are accepted.")
-      return
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File exceeds the 10 MB limit.")
-      return
-    }
-    uploadMutation.mutate(file)
+    onUpload(applicant.id, file)
   }
-
-  const hasDocument = !!applicant.documentPath
 
   return (
     <div className="flex flex-col rounded-lg border px-3 py-3 text-sm">
@@ -154,105 +99,50 @@ function ApplicantRow({
         </span>
         {isApproved && (
           <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf"
-              className="hidden"
-              onChange={handleFileChange}
-            />
+            <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
             <button
-              disabled={uploadMutation.isPending}
+              disabled={uploadPending}
               onClick={() => fileInputRef.current?.click()}
               className="shrink-0 rounded p-0.5 text-muted-foreground/60 hover:text-foreground disabled:opacity-40"
               title={hasDocument ? "Replace document" : "Upload document"}
             >
-              {uploadMutation.isPending ? (
-                <span className="text-xs">…</span>
-              ) : hasDocument ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-              ) : (
-                <Paperclip className="h-4 w-4" />
-              )}
+              {hasDocument ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Paperclip className="h-4 w-4" />}
             </button>
           </>
         )}
       </div>
-      <ApplicantPhotos
-        portraitPhotoPath={applicant.portraitPhotoPath}
-        passportPhotoPath={applicant.passportPhotoPath}
-      />
+      <ApplicantPhotos portraitPhotoPath={applicant.portraitPhotoPath} passportPhotoPath={applicant.passportPhotoPath} />
     </div>
   )
 }
 
 function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
-  const queryClient = useQueryClient()
   const [tab, setTab] = useState<Tab>("Overview")
-  const [view, setView] = useState<"detail" | "edit">("detail")
-  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | "">("")
-  const [reason, setReason] = useState("")
-
-  const { data: detail, isLoading, isError } = useQuery({
-    queryKey: ["application-detail", id],
-    queryFn: () => getApplicationDetail(id),
-  })
-
-  const { data: visaTypes = [] } = useQuery({
-    queryKey: ["visa-types"],
-    queryFn: getVisaTypes,
-  })
-
-  const { data: visaProcessings = [] } = useQuery({
-    queryKey: ["visa-processings"],
-    queryFn: getVisaProcessings,
-  })
-
-  const statusMutation = useMutation({
-    mutationFn: ({ status, reason: r }: { status: ApplicationStatus; reason?: string }) =>
-      updateApplicationStatus(id, { status, reason: r }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["application-detail", id] })
-      queryClient.invalidateQueries({ queryKey: ["applications"] })
-      toast.success("Status updated.")
-      setReason("")
-      setSelectedStatus("")
-    },
-    onError: () => toast.error("Failed to update status."),
-  })
-
-  const downloadMutation = useMutation({
-    mutationFn: ({ referenceNumber, email }: { referenceNumber: string; email: string }) =>
-      downloadVisaDocument(referenceNumber, email),
-    onError: () => toast.error("Failed to download document."),
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteApplication(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["applications"] })
-      toast.success("Application deleted.")
-      onDelete()
-    },
-    onError: () => toast.error("Failed to delete application."),
-  })
+  const state = useApplicationDetailState(id, onDelete)
+  const {
+    detail,
+    isLoading,
+    isError,
+    visaTypes,
+    visaProcessings,
+    view,
+    setView,
+    selectedStatus,
+    setSelectedStatus,
+    reason,
+    setReason,
+    statusMutation,
+    downloadMutation,
+    deleteMutation,
+    uploadMutation,
+  } = state
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-        Loading…
-      </div>
-    )
+    return <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">Loading…</div>
   }
-
   if (isError || !detail) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-sm text-destructive">
-        Failed to load application details.
-      </div>
-    )
+    return <div className="flex flex-1 items-center justify-center text-sm text-destructive">Failed to load application details.</div>
   }
-
   if (view === "edit") {
     return (
       <EditApplicationForm
@@ -266,13 +156,9 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
     )
   }
 
-  const visaTypeLabel =
-    visaTypes.find((v) => v.id === detail.visaTypeId)?.description ?? detail.visaTypeId
-  const processingLabel =
-    visaProcessings.find((p) => p.id === detail.processingOptionId)?.description ??
-    detail.processingOptionId
-  const canEdit =
-    detail.status === ApplicationStatus.Submitted || detail.status === ApplicationStatus.RequiresAction
+  const visaTypeLabel = visaTypes.find((v) => v.id === detail.visaTypeId)?.description ?? detail.visaTypeId
+  const processingLabel = visaProcessings.find((p) => p.id === detail.processingOptionId)?.description ?? detail.processingOptionId
+  const canEdit = detail.status === ApplicationStatus.Submitted || detail.status === ApplicationStatus.RequiresAction
 
   return (
     <div className="flex h-full flex-col">
@@ -287,9 +173,7 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
           </p>
         </div>
         <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[detail.status]}`} />
-        <span className="shrink-0 text-xs font-medium text-foreground/80">
-          {APPLICATION_STATUS_LABELS[detail.status]}
-        </span>
+        <span className="shrink-0 text-xs font-medium text-foreground/80">{APPLICATION_STATUS_LABELS[detail.status]}</span>
       </div>
 
       <div className="flex shrink-0 gap-1 border-b px-5 pt-2">
@@ -332,12 +216,6 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
                 <Field label="Exit Date" value={detail.exitDate ? formatDate(detail.exitDate) : null} />
                 <Field label="Visa Type" value={visaTypeLabel} />
                 <Field label="Processing Option" value={processingLabel} />
-                {detail.processingStartDate && (
-                  <Field label="Processing Started" value={formatDate(detail.processingStartDate)} />
-                )}
-                {detail.completedDateTime && (
-                  <Field label="Completed" value={formatDate(detail.completedDateTime)} />
-                )}
               </div>
             </div>
             {detail.notes && (
@@ -355,12 +233,13 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
               <p className="text-sm italic text-muted-foreground">No applicants listed.</p>
             ) : (
               detail.applicants.map((applicant, i) => (
-                <ApplicantRow
+                <ApplicantTabRow
                   key={applicant.id ?? i}
                   applicant={applicant}
                   index={i}
-                  applicationId={id}
                   isApproved={detail.status === ApplicationStatus.Approved}
+                  onUpload={(applicantId, file) => uploadMutation.mutate({ applicantId, file })}
+                  uploadPending={uploadMutation.isPending}
                 />
               ))
             )}
@@ -373,19 +252,10 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
               <p className="text-sm italic text-muted-foreground">No payment record.</p>
             ) : (
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                <Field
-                  label="Amount"
-                  value={`${detail.payment.currency.toUpperCase()} ${Number(detail.payment.amount).toFixed(2)}`}
-                />
-                <Field
-                  label="Payment Status"
-                  value={PAYMENT_STATUS_LABELS[detail.payment.status] ?? String(detail.payment.status)}
-                />
+                <Field label="Amount" value={`${detail.payment.currency.toUpperCase()} ${Number(detail.payment.amount).toFixed(2)}`} />
+                <Field label="Payment Status" value={PAYMENT_STATUS_LABELS[detail.payment.status] ?? String(detail.payment.status)} />
                 <div className="col-span-2">
-                  <Field
-                    label="Stripe Intent ID"
-                    value={<span className="font-mono text-xs">{detail.payment.stripeIntentId}</span>}
-                  />
+                  <Field label="Stripe Intent ID" value={<span className="font-mono text-xs">{detail.payment.stripeIntentId}</span>} />
                 </div>
               </div>
             )}
@@ -395,39 +265,24 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
         {tab === "Actions" && (
           <div className="flex flex-col gap-3">
             {canEdit && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-1.5"
-                onClick={() => setView("edit")}
-              >
+              <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => setView("edit")}>
                 <Pencil className="h-3.5 w-3.5" />
                 Edit Application
               </Button>
             )}
             {TERMINAL_STATUSES.has(detail.status) ? (
-              <p className="text-xs text-muted-foreground italic">
-                Status is final — no further changes allowed.
-              </p>
+              <p className="text-xs italic text-muted-foreground">Status is final — no further changes allowed.</p>
             ) : (
               (() => {
                 const options = ALLOWED_TRANSITIONS[detail.status] ?? []
-                const reasonRequired =
-                  selectedStatus !== "" && REASON_REQUIRED.has(selectedStatus as ApplicationStatus)
-                const isDisabled =
-                  selectedStatus === "" ||
-                  statusMutation.isPending ||
-                  (reasonRequired && !reason.trim())
+                const reasonRequired = selectedStatus !== "" && REASON_REQUIRED.has(selectedStatus as ApplicationStatus)
+                const isDisabled = selectedStatus === "" || statusMutation.isPending || (reasonRequired && !reason.trim())
                 return (
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-2">
                       <select
                         value={selectedStatus}
-                        onChange={(e) =>
-                          setSelectedStatus(
-                            e.target.value === "" ? "" : (Number(e.target.value) as ApplicationStatus)
-                          )
-                        }
+                        onChange={(e) => setSelectedStatus(e.target.value === "" ? "" : (Number(e.target.value) as ApplicationStatus))}
                         className={`${selectClass} flex-1`}
                       >
                         <option value="">Select new status…</option>
@@ -442,10 +297,7 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
                         disabled={isDisabled}
                         onClick={() => {
                           if (selectedStatus !== "") {
-                            statusMutation.mutate({
-                              status: selectedStatus as ApplicationStatus,
-                              reason: reason || undefined,
-                            })
+                            statusMutation.mutate({ status: selectedStatus as ApplicationStatus, reason: reason || undefined })
                           }
                         }}
                       >
@@ -464,47 +316,23 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
               })()
             )}
 
-            {detail.status === ApplicationStatus.Approved && (() => {
-              const allDocsReady = detail.applicants.length > 0 && detail.applicants.every(a => a.documentPath !== null)
-              const missingCount = detail.applicants.filter(a => a.documentPath === null).length
-              return (
-                <div className="flex flex-col gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full gap-1.5"
-                    disabled={!allDocsReady || downloadMutation.isPending}
-                    onClick={() =>
-                      downloadMutation.mutate({
-                        referenceNumber: detail.referenceNumber,
-                        email: detail.contactEmail,
-                      })
-                    }
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    {downloadMutation.isPending
-                      ? "Downloading…"
-                      : detail.applicants.length > 1
-                        ? `Download Visas (${detail.applicants.length})`
-                        : "Download Visa"}
-                  </Button>
-                  {!allDocsReady && (
-                    <p className="text-xs italic text-muted-foreground">
-                      {missingCount} document{missingCount !== 1 ? "s" : ""} missing — upload all to enable download.
-                    </p>
-                  )}
-                </div>
-              )
-            })()}
+            {detail.status === ApplicationStatus.Approved && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-1.5"
+                disabled={downloadMutation.isPending}
+                onClick={() => downloadMutation.mutate({ referenceNumber: detail.referenceNumber, email: detail.contactEmail })}
+              >
+                <Download className="h-3.5 w-3.5" />
+                {downloadMutation.isPending ? "Downloading…" : "Download Visa"}
+              </Button>
+            )}
 
             {detail.status === ApplicationStatus.Cancelled && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  >
+                  <Button variant="outline" size="sm" className="w-full gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive">
                     <Trash2 className="h-3.5 w-3.5" />
                     Delete Application
                   </Button>
@@ -513,9 +341,7 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete application?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete application{" "}
-                      <span className="font-mono font-medium">{detail.referenceNumber}</span>. This
-                      action cannot be undone.
+                      This will permanently delete application <span className="font-mono font-medium">{detail.referenceNumber}</span>. This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -538,12 +364,7 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
   )
 }
 
-interface ApplicationDetailDrawerProps {
-  applicationId: string | null
-  onClose: () => void
-}
-
-export function ApplicationDetailDrawer({ applicationId, onClose }: ApplicationDetailDrawerProps) {
+export function DetailDrawerVariantA({ applicationId, onClose }: { applicationId: string | null; onClose: () => void }) {
   return (
     <Sheet open={!!applicationId} onOpenChange={(open) => { if (!open) onClose() }}>
       <SheetContent>

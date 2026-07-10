@@ -20,9 +20,7 @@ import {
 } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { TableContainer } from "@/components/ui/table-container"
-// PROTOTYPE — swap back to "./components/ApplicationDetailDrawer" (ApplicationDetailDrawer)
-// once a variant is picked. See ApplicationDetailDrawerPrototype.tsx.
-import { ApplicationDetailDrawerPrototype as ApplicationDetailDrawer } from "./components/ApplicationDetailDrawerPrototype"
+import { ApplicationDetailDrawer } from "./components/ApplicationDetailDrawer"
 
 const ALL_STATUSES = [
   ApplicationStatus.Submitted,

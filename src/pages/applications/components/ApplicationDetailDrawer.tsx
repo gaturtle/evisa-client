@@ -30,9 +30,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetCloseButton, SheetContent } from "@/components/ui/sheet"
-// PROTOTYPE — swap back to "./EditApplicationForm" (EditApplicationForm)
-// once a variant is picked. See EditApplicationFormPrototype.tsx.
-import { EditApplicationFormPrototype as EditApplicationForm } from "./EditApplicationFormPrototype"
+import { EditApplicationForm } from "./EditApplicationForm"
 import { ApplicantPhotos } from "./ApplicantPhotos"
 
 const STATUS_DOT: Record<ApplicationStatus, string> = {

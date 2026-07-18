@@ -226,7 +226,7 @@ List all applications with optional filtering and offset pagination. Sorted by `
 
 Submit a new visa application with one or more applicants and their photo files.
 
-If `ProcessingOptionId` has an Excluded Group covering any applicant's nationality, the request is rejected with `400` — check `GET /api/v1/visa-processing/{id}/excluded-groups` or filter the list via `?nationalityIds=` before letting the user select it.
+If `ProcessingOptionId` has an Excluded Group covering any applicant's nationality with no covering Exception, the request is rejected with `400` — check `GET /api/v1/visa-processing/{id}/excluded-groups` and `GET /api/v1/visa-processing/{id}/exceptions`, or filter the list via `?nationalityIds=` before letting the user select it.
 
 If `VisaTypeId` has a Restricted Group covering any applicant's nationality with no Exception, the application is still accepted, but `status` is set to `6` (`PendingReview`) instead of `0` (`Submitted`). There is no pre-submit signal for this — check `GET /api/v1/visa-type/{id}/restricted-groups` and `GET /api/v1/visa-type/{id}/exceptions` client-side if you want to warn the user before they submit.
 
@@ -1485,7 +1485,7 @@ Base path: `/api/v1/visa-processing`
 
 ### GET /api/v1/visa-processing
 
-Get all visa processing options. When `nationalityIds` is supplied, options that have an Excluded Group covering any of the given nationalities are removed from the returned list entirely — the exclusion is hard, with no Exception mechanism to lift it (contrast with Visa Type Restricted Groups, which are never filtered out of `GET /api/v1/visa-type`).
+Get all visa processing options. When `nationalityIds` is supplied, options that have an Excluded Group covering any of the given nationalities — with no covering Exception — are removed from the returned list entirely (contrast with Visa Type Restricted Groups, which are never filtered out of `GET /api/v1/visa-type`).
 
 #### Query Parameters
 
@@ -1679,7 +1679,7 @@ Delete a visa processing option.
 
 ### GET /api/v1/visa-processing/{id}/excluded-groups
 
-Get the `NationalityGroup`s flagged as Excluded for this processing option. An applicant whose nationality belongs to one of these groups cannot select this option at all — it's dropped from `GET /api/v1/visa-processing?nationalityIds=...`, and submitting it anyway via `POST /api/v1/applications` is rejected outright with `400` rather than routed to `PendingReview`. There is no Exception mechanism for exclusions.
+Get the `NationalityGroup`s flagged as Excluded for this processing option. An applicant whose nationality belongs to one of these groups cannot select this option — it's dropped from `GET /api/v1/visa-processing?nationalityIds=...`, and submitting it anyway via `POST /api/v1/applications` is rejected outright with `400` rather than routed to `PendingReview` — unless an Exception covers that (VisaProcessing, Nationality) pair, in which case the option is fully available again. See `GET /api/v1/visa-processing/{id}/exceptions`.
 
 **Authorization:** Public
 
@@ -1757,6 +1757,108 @@ Remove an Excluded Group from this processing option.
   "statusCode": 404,
   "data": null,
   "message": "Excluded group not found",
+  "timestamp": "2026-06-06T10:00:00"
+}
+```
+
+---
+
+### GET /api/v1/visa-processing/{id}/exceptions
+
+Get the `VisaNationality` records that have an Exception for this processing option — a specific (VisaProcessing, Nationality) pair that fully lifts an Excluded Group's block for that pair only, as if the exclusion never applied. Does not carry over to other processing options.
+
+**Authorization:** Public
+
+#### Response `200 OK`
+
+```json
+{
+  "statusCode": 200,
+  "data": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "origName": "Vietnamese",
+      "vietnameseName": "Việt Nam",
+      "isEligible": true,
+      "exemptionDays": 90,
+      "groupId": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6"
+    }
+  ],
+  "message": "Success",
+  "timestamp": "2026-06-06T10:00:00"
+}
+```
+
+#### Response `404 Not Found`
+
+```json
+{
+  "statusCode": 404,
+  "data": null,
+  "message": "Visa processing not found",
+  "timestamp": "2026-06-06T10:00:00"
+}
+```
+
+---
+
+### POST /api/v1/visa-processing/{id}/exceptions
+
+Add an Exception for a nationality on this processing option. Idempotent. The exception doesn't need to correspond to an actual exclusion — adding one for a nationality that isn't in an excluded group is allowed and simply has no effect.
+
+**Authorization:** `Admin` only
+
+#### Request Body
+
+| Field         | Type          | Required | Description             |
+| ------------- | ------------- | -------- | ----------------------- |
+| nationalityId | string (UUID) | Yes      | FK → VisaNationality.Id |
+
+```json
+{ "nationalityId": "3fa85f64-5717-4562-b3fc-2c963f66afa6" }
+```
+
+#### Response `200 OK`
+
+```json
+{
+  "statusCode": 200,
+  "data": "",
+  "message": "Exception added successfully",
+  "timestamp": "2026-06-06T10:00:00"
+}
+```
+
+#### Response `404 Not Found`
+
+```json
+{
+  "statusCode": 404,
+  "data": null,
+  "message": "Visa processing or nationality not found",
+  "timestamp": "2026-06-06T10:00:00"
+}
+```
+
+---
+
+### DELETE /api/v1/visa-processing/{id}/exceptions
+
+Remove a nationality's Exception on this processing option.
+
+**Authorization:** `Admin` only
+
+#### Request Body
+
+Same schema as `POST /api/v1/visa-processing/{id}/exceptions`.
+
+#### Response `404 Not Found`
+
+```json
+{
+  "statusCode": 404,
+  "data": null,
+  "message": "Exception not found",
   "timestamp": "2026-06-06T10:00:00"
 }
 ```

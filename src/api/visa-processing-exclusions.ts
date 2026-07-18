@@ -1,6 +1,7 @@
 import { apiClient } from "@/api/client"
 import type { ApiResponse } from "@/types/api"
 import type { NationalityGroup } from "@/types/nationality-group"
+import type { VisaNationality } from "@/types/nationality"
 
 export async function getVisaProcessingExcludedGroups(visaProcessingId: string): Promise<string[]> {
   const res = await apiClient.get<ApiResponse<NationalityGroup[]>>(
@@ -28,4 +29,19 @@ export async function setVisaProcessingExcludedGroups(
     ...toAdd.map((id) => addVisaProcessingExcludedGroup(visaProcessingId, id)),
     ...toRemove.map((id) => removeVisaProcessingExcludedGroup(visaProcessingId, id)),
   ])
+}
+
+export async function getVisaProcessingExceptions(visaProcessingId: string): Promise<VisaNationality[]> {
+  const res = await apiClient.get<ApiResponse<VisaNationality[]>>(
+    `/api/v1/visa-processing/${visaProcessingId}/exceptions`
+  )
+  return res.data.data ?? []
+}
+
+export async function addVisaProcessingException(visaProcessingId: string, nationalityId: string): Promise<void> {
+  await apiClient.post(`/api/v1/visa-processing/${visaProcessingId}/exceptions`, { nationalityId })
+}
+
+export async function removeVisaProcessingException(visaProcessingId: string, nationalityId: string): Promise<void> {
+  await apiClient.delete(`/api/v1/visa-processing/${visaProcessingId}/exceptions`, { data: { nationalityId } })
 }

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { Pencil, Plus, Search, Shield, Trash2 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
@@ -24,12 +24,14 @@ import {
 import { TableContainer } from "@/components/ui/table-container"
 import { VisaProcessingFormDialog } from "@/pages/visa-processings/components/VisaProcessingFormDialog"
 import { DeleteVisaProcessingDialog } from "@/pages/visa-processings/components/DeleteVisaProcessingDialog"
+import { VisaProcessingExclusionsDrawer } from "@/pages/visa-processings/components/VisaProcessingExclusionsDrawer"
 
 export function VisaProcessingsPage() {
   const [search, setSearch] = useState("")
   const [formOpen, setFormOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<VisaProcessing | undefined>(undefined)
   const [deleteTarget, setDeleteTarget] = useState<VisaProcessing | null>(null)
+  const [exclusionsTarget, setExclusionsTarget] = useState<VisaProcessing | null>(null)
 
   const { data = [], isLoading, isError } = useQuery({
     queryKey: ["visa-processings"],
@@ -153,6 +155,20 @@ export function VisaProcessingsPage() {
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 text-muted-foreground"
+                              onClick={() => setExclusionsTarget(visaProcessing)}
+                            >
+                              <Shield className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Excluded Groups & Exceptions</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground"
                               onClick={() => openEdit(visaProcessing)}
                             >
                               <Pencil className="h-3.5 w-3.5" />
@@ -196,6 +212,11 @@ export function VisaProcessingsPage() {
         open={!!deleteTarget}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
         visaProcessing={deleteTarget}
+      />
+
+      <VisaProcessingExclusionsDrawer
+        visaProcessing={exclusionsTarget}
+        onClose={() => setExclusionsTarget(null)}
       />
     </div>
   )

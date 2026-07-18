@@ -2,15 +2,10 @@ import { useEffect } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { createVisaProcessing, updateVisaProcessing } from "@/api/visa-processings"
-import {
-  getVisaProcessingExcludedGroups,
-  setVisaProcessingExcludedGroups,
-} from "@/api/visa-processing-exclusions"
-import { getNationalityGroups } from "@/api/nationality-groups"
 import type { VisaProcessing } from "@/types/visa-processing"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -30,7 +25,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { MultiCombobox } from "@/components/ui/multi-combobox"
 
 const formSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -44,15 +38,12 @@ const formSchema = z.object({
     z.number().int().positive("Max days must be a positive integer").nullable()
   ),
   isEmergency: z.boolean(),
-  excludedGroupIds: z.array(z.string()),
 }).refine(
   (d) => d.minDays == null || d.maxDays == null || d.minDays <= d.maxDays,
   { message: "Min days must not exceed max days", path: ["maxDays"] }
 )
 
 type FormValues = z.infer<typeof formSchema>
-
-const EMPTY_GROUP_IDS: string[] = []
 
 interface VisaProcessingFormDialogProps {
   open: boolean
@@ -68,20 +59,9 @@ export function VisaProcessingFormDialog({
   const isEdit = !!visaProcessing
   const queryClient = useQueryClient()
 
-  const { data: groups = [] } = useQuery({
-    queryKey: ["nationality-groups"],
-    queryFn: getNationalityGroups,
-  })
-
-  const { data: excludedGroupIds = EMPTY_GROUP_IDS } = useQuery({
-    queryKey: ["visa-processing-excluded-groups", visaProcessing?.id],
-    queryFn: () => getVisaProcessingExcludedGroups(visaProcessing!.id),
-    enabled: isEdit && open,
-  })
-
   const form = useForm<FormValues, unknown, FormValues>({
     resolver: zodResolver(formSchema) as unknown as Resolver<FormValues, unknown, FormValues>,
-    defaultValues: { description: "", price: 0, isEmergency: false, excludedGroupIds: [] },
+    defaultValues: { description: "", price: 0, isEmergency: false },
   })
 
   useEffect(() => {
@@ -92,23 +72,17 @@ export function VisaProcessingFormDialog({
         minDays: visaProcessing?.minDays ?? null,
         maxDays: visaProcessing?.maxDays ?? null,
         isEmergency: visaProcessing?.isEmergency ?? false,
-        excludedGroupIds: isEdit ? excludedGroupIds : [],
       })
     }
-  }, [open, visaProcessing, form, isEdit, excludedGroupIds])
+  }, [open, visaProcessing, form])
 
   const mutation = useMutation({
-    mutationFn: async (values: FormValues) => {
-      const { excludedGroupIds: groupIds, ...body } = values
-      const saved = isEdit
-        ? await updateVisaProcessing(visaProcessing.id, body)
-        : await createVisaProcessing(body)
-      await setVisaProcessingExcludedGroups(saved.id, groupIds, isEdit ? excludedGroupIds : [])
-      return saved
-    },
+    mutationFn: (values: FormValues) =>
+      isEdit
+        ? updateVisaProcessing(visaProcessing.id, values)
+        : createVisaProcessing(values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["visa-processings"] })
-      queryClient.invalidateQueries({ queryKey: ["visa-processing-excluded-groups", visaProcessing?.id] })
       toast.success(isEdit ? "Processing option updated." : "Processing option created.")
       onOpenChange(false)
     },
@@ -210,31 +184,6 @@ export function VisaProcessingFormDialog({
                     />
                   </FormControl>
                   <FormLabel className="font-normal cursor-pointer">Emergency processing</FormLabel>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="excludedGroupIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Excluded Groups <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
-                  <FormControl>
-                    <MultiCombobox
-                      options={groups.map((g) => ({ value: g.id, label: g.name }))}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      placeholder="No excluded groups"
-                      searchPlaceholder="Search groups…"
-                      emptyText="No groups found."
-                    />
-                  </FormControl>
-                  <p className="text-xs text-muted-foreground">
-                    Applicants whose nationality belongs to an excluded group cannot select this
-                    processing option at all — there's no exception for this.
-                  </p>
-                  <FormMessage />
                 </FormItem>
               )}
             />

@@ -24,6 +24,7 @@ import { ApplicationDetailDrawer } from "./components/ApplicationDetailDrawer"
 
 const ALL_STATUSES = [
   ApplicationStatus.Submitted,
+  ApplicationStatus.PendingReview,
   ApplicationStatus.UnderReview,
   ApplicationStatus.Approved,
   ApplicationStatus.Rejected,
@@ -46,6 +47,8 @@ const STATUS_BADGE_CLASSES: Record<ApplicationStatus, string> = {
     "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-400",
   [ApplicationStatus.Cancelled]:
     "border-transparent bg-secondary text-secondary-foreground",
+  [ApplicationStatus.PendingReview]:
+    "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-400",
 }
 
 function StatusBadge({ status }: { status: ApplicationStatus }) {

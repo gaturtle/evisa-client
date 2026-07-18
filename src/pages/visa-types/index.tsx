@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { Pencil, Plus, Search, Shield, Trash2 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 
 import { getVisaTypes } from "@/api/visa-types"
@@ -22,12 +22,14 @@ import {
 import { TableContainer } from "@/components/ui/table-container"
 import { VisaTypeFormDialog } from "@/pages/visa-types/components/VisaTypeFormDialog"
 import { DeleteVisaTypeDialog } from "@/pages/visa-types/components/DeleteVisaTypeDialog"
+import { VisaTypeRestrictionsDrawer } from "@/pages/visa-types/components/VisaTypeRestrictionsDrawer"
 
 export function VisaTypesPage() {
   const [search, setSearch] = useState("")
   const [formOpen, setFormOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<VisaType | undefined>(undefined)
   const [deleteTarget, setDeleteTarget] = useState<VisaType | null>(null)
+  const [restrictionsTarget, setRestrictionsTarget] = useState<VisaType | null>(null)
 
   const { data = [], isLoading, isError } = useQuery({
     queryKey: ["visa-types"],
@@ -133,6 +135,20 @@ export function VisaTypesPage() {
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 text-muted-foreground"
+                              onClick={() => setRestrictionsTarget(visaType)}
+                            >
+                              <Shield className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Restricted Groups & Exceptions</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground"
                               onClick={() => openEdit(visaType)}
                             >
                               <Pencil className="h-3.5 w-3.5" />
@@ -176,6 +192,11 @@ export function VisaTypesPage() {
         open={!!deleteTarget}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
         visaType={deleteTarget}
+      />
+
+      <VisaTypeRestrictionsDrawer
+        visaType={restrictionsTarget}
+        onClose={() => setRestrictionsTarget(null)}
       />
     </div>
   )

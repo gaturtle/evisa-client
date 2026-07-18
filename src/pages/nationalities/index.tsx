@@ -3,6 +3,7 @@ import { Pencil, Plus, Search, Trash2 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 
 import { getNationalities } from "@/api/nationalities"
+import { getNationalityGroups } from "@/api/nationality-groups"
 import type { VisaNationality } from "@/types/nationality"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,6 +35,13 @@ export function NationalitiesPage() {
     queryKey: ["nationalities"],
     queryFn: getNationalities,
   })
+
+  const { data: groups = [] } = useQuery({
+    queryKey: ["nationality-groups"],
+    queryFn: getNationalityGroups,
+  })
+
+  const groupNameById = new Map(groups.map((g) => [g.id, g.name]))
 
   const filtered = data.filter(
     (n) =>
@@ -83,6 +91,7 @@ export function NationalitiesPage() {
               <col style={{ width: 220 }} />
               <col style={{ width: 120 }} />
               <col style={{ width: 140 }} />
+              <col style={{ width: 140 }} />
               <col style={{ width: 90 }} />
             </colgroup>
             <TableHeader className="sticky top-0 z-10 bg-muted/80">
@@ -91,13 +100,14 @@ export function NationalitiesPage() {
                 <TableHead className="px-4 text-muted-foreground/70">Vietnamese Name</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Is Eligible</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Exemption Days</TableHead>
+                <TableHead className="px-4 text-muted-foreground/70">Group</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                     Loading…
                   </TableCell>
                 </TableRow>
@@ -105,7 +115,7 @@ export function NationalitiesPage() {
 
               {isError && (
                 <TableRow>
-                  <TableCell colSpan={5} className="px-4 py-12 text-center text-destructive">
+                  <TableCell colSpan={6} className="px-4 py-12 text-center text-destructive">
                     Failed to load nationalities.
                   </TableCell>
                 </TableRow>
@@ -113,7 +123,7 @@ export function NationalitiesPage() {
 
               {!isLoading && !isError && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                     No nationalities found.
                   </TableCell>
                 </TableRow>
@@ -142,6 +152,11 @@ export function NationalitiesPage() {
                     <TableCell className="px-4 text-foreground/60">
                       {nationality.exemptionDays != null
                         ? `${nationality.exemptionDays} days`
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="px-4 text-foreground/60">
+                      {nationality.groupId
+                        ? groupNameById.get(nationality.groupId) ?? "—"
                         : "—"}
                     </TableCell>
                     <TableCell className="px-4">

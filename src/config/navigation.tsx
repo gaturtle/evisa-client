@@ -1,5 +1,6 @@
 import type { NavSection } from "@/types/navigation";
 import { NationalitiesPage } from "@/pages/nationalities";
+import { NationalityGroupsPage } from "@/pages/nationality-groups";
 import { VisaTypesPage } from "@/pages/visa-types";
 import { VisaProcessingsPage } from "@/pages/visa-processings";
 import { ApplicationsPage } from "@/pages/applications";
@@ -7,7 +8,7 @@ import { HolidaysPage } from "@/pages/holidays";
 import { UsersPage } from "@/pages/users";
 import { CategoriesPage } from "@/pages/categories";
 import { PostsPage } from "@/pages/posts";
-import { Building2, CalendarDays, FileText, FolderOpen, Newspaper, Shield, Tag } from "lucide-react";
+import { Building2, CalendarDays, FileText, FolderOpen, Newspaper, Shield, Tag, Users } from "lucide-react";
 
 export const navigationSections: NavSection[] = [
   {
@@ -19,6 +20,12 @@ export const navigationSections: NavSection[] = [
         label: "Nationalities",
         icon: Tag,
         component: NationalitiesPage,
+      },
+      {
+        id: "nationality-groups",
+        label: "Nationality Groups",
+        icon: Users,
+        component: NationalityGroupsPage,
       },
       {
         id: "holidays",

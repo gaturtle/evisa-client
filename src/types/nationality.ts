@@ -4,6 +4,7 @@ export interface VisaNationality {
   vietnameseName: string
   isEligible: boolean
   exemptionDays: number | null
+  groupId: string | null
 }
 
 export interface CreateNationalityRequest {
@@ -11,6 +12,7 @@ export interface CreateNationalityRequest {
   vietnameseName: string
   isEligible: boolean
   exemptionDays?: number
+  groupId?: string
 }
 
 export interface UpdateNationalityRequest {
@@ -18,4 +20,5 @@ export interface UpdateNationalityRequest {
   vietnameseName: string
   isEligible: boolean
   exemptionDays?: number
+  groupId?: string
 }

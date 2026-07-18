@@ -40,6 +40,7 @@ const STATUS_DOT: Record<ApplicationStatus, string> = {
   [ApplicationStatus.Rejected]: "bg-destructive",
   [ApplicationStatus.RequiresAction]: "bg-orange-500",
   [ApplicationStatus.Cancelled]: "bg-secondary-foreground/50",
+  [ApplicationStatus.PendingReview]: "bg-purple-500",
 }
 
 const TABS = ["Overview", "Applicants", "Payment", "Actions"] as const
@@ -91,6 +92,11 @@ const ALLOWED_TRANSITIONS: Partial<Record<ApplicationStatus, ApplicationStatus[]
     ApplicationStatus.Cancelled,
   ],
   [ApplicationStatus.RequiresAction]: [
+    ApplicationStatus.UnderReview,
+    ApplicationStatus.Rejected,
+    ApplicationStatus.Cancelled,
+  ],
+  [ApplicationStatus.PendingReview]: [
     ApplicationStatus.UnderReview,
     ApplicationStatus.Rejected,
     ApplicationStatus.Cancelled,

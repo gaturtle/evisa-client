@@ -5,6 +5,7 @@ export const ApplicationStatus = {
   Rejected: 3,
   RequiresAction: 4,
   Cancelled: 5,
+  PendingReview: 6,
 } as const
 export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof ApplicationStatus]
 
@@ -15,6 +16,7 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   [ApplicationStatus.Rejected]: "Rejected",
   [ApplicationStatus.RequiresAction]: "Requires Action",
   [ApplicationStatus.Cancelled]: "Cancelled",
+  [ApplicationStatus.PendingReview]: "Pending Review",
 }
 
 export const PaymentStatus = {

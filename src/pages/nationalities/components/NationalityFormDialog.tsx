@@ -2,13 +2,15 @@ import { useEffect } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { createNationality, updateNationality } from "@/api/nationalities"
+import { getNationalityGroups } from "@/api/nationality-groups"
 import type { VisaNationality } from "@/types/nationality"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Combobox } from "@/components/ui/combobox"
 import {
   Dialog,
   DialogContent,
@@ -37,6 +39,7 @@ const formSchema = z.object({
     .optional()
     .or(z.literal(""))
     .transform((v) => (v === "" ? undefined : v)),
+  groupId: z.string(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -55,6 +58,11 @@ export function NationalityFormDialog({
   const isEdit = !!nationality
   const queryClient = useQueryClient()
 
+  const { data: groups = [] } = useQuery({
+    queryKey: ["nationality-groups"],
+    queryFn: getNationalityGroups,
+  })
+
   const form = useForm<FormValues, unknown, FormValues>({
     resolver: zodResolver(formSchema) as unknown as Resolver<FormValues, unknown, FormValues>,
     defaultValues: {
@@ -62,6 +70,7 @@ export function NationalityFormDialog({
       vietnameseName: "",
       isEligible: false,
       exemptionDays: undefined,
+      groupId: "",
     },
   })
 
@@ -76,8 +85,9 @@ export function NationalityFormDialog({
               vietnameseName: nationality.vietnameseName,
               isEligible: nationality.isEligible,
               exemptionDays: nationality.exemptionDays ?? undefined,
+              groupId: nationality.groupId ?? "",
             }
-          : { origName: "", vietnameseName: "", isEligible: false, exemptionDays: undefined }
+          : { origName: "", vietnameseName: "", isEligible: false, exemptionDays: undefined, groupId: "" }
       )
     }
   }, [open, nationality, form])
@@ -89,6 +99,7 @@ export function NationalityFormDialog({
         vietnameseName: values.vietnameseName,
         isEligible: values.isEligible,
         exemptionDays: values.isEligible ? values.exemptionDays : undefined,
+        groupId: values.groupId || undefined,
       }
       return isEdit
         ? updateNationality(nationality.id, body)
@@ -157,6 +168,27 @@ export function NationalityFormDialog({
                     />
                   </FormControl>
                   <FormLabel className="!mt-0">Eligible for e-visa</FormLabel>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="groupId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Group <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                  <FormControl>
+                    <Combobox
+                      options={groups.map((g) => ({ value: g.id, label: g.name }))}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="None"
+                      searchPlaceholder="Search groups…"
+                      emptyText="No groups found."
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

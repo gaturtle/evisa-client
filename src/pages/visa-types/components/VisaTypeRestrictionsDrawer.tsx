@@ -105,6 +105,7 @@ function DrawerBody({ visaType }: { visaType: VisaType }) {
           </p>
           {!loadingRestrictions && (
             <MultiCombobox
+              className="mt-3"
               options={groups.map((g) => ({ value: g.id, label: g.name }))}
               value={pendingGroupIds}
               onValueChange={setGroupIdsOverride}
@@ -143,7 +144,7 @@ function DrawerBody({ visaType }: { visaType: VisaType }) {
             its group changes later.
           </p>
 
-          <div className="mb-3 flex gap-2">
+          <div className="mb-3 mt-3 flex gap-2">
             <div className="flex-1">
               <Combobox
                 options={nationalities.map((n) => ({ value: n.id, label: n.origName }))}

@@ -17,28 +17,28 @@ Tokens expire after **8 hours**. No refresh token mechanism — re-authenticate 
 
 ### Roles
 
-| Role    | Description                                                                            |
-| ------- | -------------------------------------------------------------------------------------- |
-| `Admin` | Full access — reference data CRUD, application management, user management             |
+| Role | Description |
+|------|-------------|
+| `Admin` | Full access — reference data CRUD, application management, user management |
 | `Staff` | Read-only access to applications; blocked from reference data CRUD and user management |
 
 ### Endpoint authorization summary
 
-| Endpoint group                                                                                                                             | Rule                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
-| `POST /api/v1/auth/login`                                                                                                                  | Public                                 |
-| `GET /api/v1/applications/track`, `GET /api/v1/applications/track/document`                                                                | Public                                 |
-| `POST /api/v1/applications`                                                                                                                | Public                                 |
-| `PATCH /api/v1/applications/{id}/payment-confirm`                                                                                          | Public                                 |
-| `GET /api/v1/applications`, `GET /api/v1/applications/{id}`, `PATCH /{id}/status`, `GET /{id}/payment`                                     | `[Authorize]` (any authenticated user) |
+| Endpoint group | Rule |
+|---|---|
+| `POST /api/v1/auth/login` | Public |
+| `GET /api/v1/applications/track`, `GET /api/v1/applications/track/document` | Public |
+| `POST /api/v1/applications` | Public |
+| `PATCH /api/v1/applications/{id}/payment-confirm` | Public |
+| `GET /api/v1/applications`, `GET /api/v1/applications/{id}`, `PATCH /{id}/status`, `GET /{id}/payment` | `[Authorize]` (any authenticated user) |
 | `PUT /api/v1/applications/{id}`, `DELETE /api/v1/applications/{id}`, `POST /{id}/document`, `POST /{id}/applicants/{applicantId}/document` | `[Authorize]` (any authenticated user) |
-| `GET/POST/PUT/DELETE /api/v1/nationality`                                                                                                  | `Admin` only                           |
-| `GET/POST/PUT/DELETE /api/v1/visa-type`                                                                                                    | `Admin` only                           |
-| `GET/POST/PUT/DELETE /api/v1/visa-processing`                                                                                              | `Admin` only                           |
-| `GET/POST/PUT/DELETE /api/v1/holidays`                                                                                                     | `Admin` only                           |
-| `POST/GET/PUT/DELETE /api/v1/auth/users`                                                                                                   | `Admin` only                           |
-| `GET /api/v1/categories`, `GET /api/v1/posts`, `GET /api/v1/posts/{slug}`                                                                  | Public                                 |
-| `POST/PUT/DELETE /api/v1/categories`, `POST/PUT/DELETE /api/v1/posts`, `PATCH /api/v1/posts/{id}/status`                                   | `[Authorize]` (any authenticated user) |
+| `GET/POST/PUT/DELETE /api/v1/nationality` | `Admin` only |
+| `GET/POST/PUT/DELETE /api/v1/visa-type` | `Admin` only |
+| `GET/POST/PUT/DELETE /api/v1/visa-processing` | `Admin` only |
+| `GET/POST/PUT/DELETE /api/v1/holidays` | `Admin` only |
+| `POST/GET/PUT/DELETE /api/v1/auth/users` | `Admin` only |
+| `GET /api/v1/categories`, `GET /api/v1/posts`, `GET /api/v1/posts/{slug}` | Public |
+| `POST/PUT/DELETE /api/v1/categories`, `POST/PUT/DELETE /api/v1/posts`, `PATCH /api/v1/posts/{id}/status` | `[Authorize]` (any authenticated user) |
 
 ---
 
@@ -46,17 +46,17 @@ Tokens expire after **8 hours**. No refresh token mechanism — re-authenticate 
 
 All endpoints return a unified `ApiResponse<T>` wrapper:
 
-| Field      | Type                  | Description                     |
-| ---------- | --------------------- | ------------------------------- |
-| statusCode | integer               | HTTP status code                |
-| data       | T \| null             | Response payload                |
-| message    | string                | Human-readable result message   |
-| timestamp  | string (ISO 8601 UTC) | Time the response was generated |
+| Field | Type | Description |
+|-------|------|-------------|
+| statusCode | integer | HTTP status code |
+| data | T \| null | Response payload |
+| message | string | Human-readable result message |
+| timestamp | string (ISO 8601 UTC) | Time the response was generated |
 
 ```json
 {
   "statusCode": 200,
-  "data": {},
+  "data": { },
   "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
 }
@@ -79,96 +79,134 @@ All endpoints return a unified `ApiResponse<T>` wrapper:
 
 ### VisaApplication
 
-| Field               | Type                  | Nullable | Description                                                                                                                                                              |
-| ------------------- | --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| id                  | string (UUID)         | No       | Unique identifier                                                                                                                                                        |
-| referenceNumber     | string                | No       | Server-generated reference — `"EV"` + 8 uppercase chars                                                                                                                  |
-| purposeOfTravel     | string                | No       | Reason for travel                                                                                                                                                        |
-| visaTypeId          | string (UUID)         | No       | FK → VisaType                                                                                                                                                            |
-| processingOptionId  | string (UUID)         | No       | FK → VisaProcessing                                                                                                                                                      |
-| entryDate           | string (ISO 8601)     | No       | Intended entry date                                                                                                                                                      |
-| exitDate            | string (ISO 8601)     | No       | Intended exit date                                                                                                                                                       |
-| contactFullName     | string                | No       | Primary contact full name                                                                                                                                                |
-| contactPhone        | string                | No       | Primary contact phone                                                                                                                                                    |
-| contactEmail        | string                | No       | Primary contact email                                                                                                                                                    |
-| contactAddress      | string                | No       | Primary contact address                                                                                                                                                  |
-| isUrgentProcessing  | boolean               | No       | Urgent processing requested                                                                                                                                              |
-| isMultipleEntry     | boolean               | No       | Multiple entry requested                                                                                                                                                 |
-| isAirportTransfer   | boolean               | No       | Airport transfer requested                                                                                                                                               |
-| isOther             | boolean               | No       | Other special request                                                                                                                                                    |
-| notes               | string                | Yes      | Free-text notes                                                                                                                                                          |
-| status              | integer               | No       | `0` Submitted · `1` UnderReview · `2` Approved · `3` Rejected · `4` RequiresAction · `5` Cancelled · `6` PendingReview                                                   |
-| documentPath        | string                | Yes      | Relative path to the admin-uploaded visa PDF (`documents/{referenceNumber}.pdf`); `null` until an admin uploads a document via `POST /api/v1/applications/{id}/document` |
-| processingStartDate | string (ISO 8601 UTC) | Yes      | Set on payment confirmation; `null` until then                                                                                                                           |
-| completedDateTime   | string (ISO 8601 UTC) | Yes      | Set when status → Approved or Rejected; `null` until then                                                                                                                |
-| createdDateTime     | string (ISO 8601)     | No       | Record creation time                                                                                                                                                     |
-| modifiedDateTime    | string (ISO 8601)     | No       | Last modification time                                                                                                                                                   |
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| id | string (UUID) | No | Unique identifier |
+| referenceNumber | string | No | Server-generated reference — `"EV"` + 8 uppercase chars |
+| purposeOfTravel | string | No | Reason for travel |
+| visaTypeId | string (UUID) | No | FK → VisaType |
+| processingOptionId | string (UUID) | No | FK → VisaProcessing |
+| entryDate | string (ISO 8601) | No | Intended entry date |
+| exitDate | string (ISO 8601) | No | Intended exit date |
+| contactFullName | string | No | Primary contact full name |
+| contactPhone | string | No | Primary contact phone |
+| contactEmail | string | No | Primary contact email |
+| contactAddress | string | No | Primary contact address |
+| companyName | string | Yes | Sponsoring/host company name in Vietnam — set when purposeOfTravel is Business/Working, `null` otherwise |
+| companyPhone | string | Yes | Company phone in Vietnam (`+84` prefixed) — set when purposeOfTravel is Business/Working, `null` otherwise |
+| companyAddress | string | Yes | Company address in Vietnam — set when purposeOfTravel is Business/Working, `null` otherwise |
+| isUrgentProcessing | boolean | No | Urgent processing requested |
+| isMultipleEntry | boolean | No | Multiple entry requested |
+| isAirportTransfer | boolean | No | Airport transfer requested |
+| isOther | boolean | No | Other special request |
+| notes | string | Yes | Free-text notes |
+| emergencyContactName | string | Yes | Emergency contact full name — required when the shared applicant nationality has `requiresExtraDetails: true`, `null` otherwise |
+| emergencyContactPhone | string | Yes | Emergency contact phone number — required under the same condition |
+| emergencyContactRelationship | string | Yes | Emergency contact's relationship to the applicant — required under the same condition |
+| emergencyContactAddress | string | Yes | Emergency contact address — required under the same condition |
+| occupationCompanyName | string | Yes | Applicant's current employer name — required under the same condition |
+| occupationJobTitle | string | Yes | Applicant's job title — required under the same condition |
+| occupationCompanyPhone | string | Yes | Applicant's company phone number — required under the same condition |
+| occupationCompanyAddress | string | Yes | Applicant's company address — required under the same condition |
+| vnStayAddress | string | Yes | Temporary resident address in Vietnam — required under the same condition |
+| vnStayPhone | string | Yes | Phone number in Vietnam — required under the same condition |
+| vnVisitedLastYear | string | Yes | `"yes"` \| `"no"` — whether the applicant visited Vietnam in the last year; required under the same condition |
+| vnVisitDetails | string | Yes | When and how long the applicant visited Vietnam — required under the same condition |
+| vnHasRelatives | string | Yes | `"yes"` \| `"no"` — whether the applicant has relatives in Vietnam; required under the same condition |
+| vnRelativeDetails | string | Yes | Relative details, if any — optional even when the other extra-details fields are required |
+| status | integer | No | `0` Submitted · `1` UnderReview · `2` Approved · `3` Rejected · `4` RequiresAction · `5` Cancelled · `6` PendingReview |
+| documentPath | string | Yes | Relative path to the admin-uploaded visa PDF (`documents/{referenceNumber}.pdf`); `null` until an admin uploads a document via `POST /api/v1/applications/{id}/document` |
+| processingStartDate | string (ISO 8601 UTC) | Yes | Set on payment confirmation; `null` until then |
+| completedDateTime | string (ISO 8601 UTC) | Yes | Set when status → Approved or Rejected; `null` until then |
+| createdDateTime | string (ISO 8601) | No | Record creation time |
+| modifiedDateTime | string (ISO 8601) | No | Last modification time |
 
 ### Payment
 
-| Field           | Type              | Nullable | Description                              |
-| --------------- | ----------------- | -------- | ---------------------------------------- |
-| id              | string (UUID)     | No       | Unique identifier                        |
-| applicationId   | string (UUID)     | No       | FK → VisaApplication                     |
-| stripeIntentId  | string            | No       | Stripe PaymentIntent ID                  |
-| amount          | number (decimal)  | No       | Charged amount                           |
-| currency        | string            | No       | Currency code (default: `"usd"`)         |
-| status          | integer           | No       | `0` Pending · `1` Succeeded · `2` Failed |
-| createdDateTime | string (ISO 8601) | No       | Record creation time                     |
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| id | string (UUID) | No | Unique identifier |
+| applicationId | string (UUID) | No | FK → VisaApplication |
+| stripeIntentId | string | No | Stripe PaymentIntent ID |
+| amount | number (decimal) | No | Charged amount |
+| currency | string | No | Currency code (default: `"usd"`) |
+| status | integer | No | `0` Pending · `1` Succeeded · `2` Failed |
+| createdDateTime | string (ISO 8601) | No | Record creation time |
 
 ### Applicant
 
-| Field             | Type          | Nullable | Description                                                                                                                                                                                                    |
-| ----------------- | ------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id                | string (UUID) | No       | Unique identifier                                                                                                                                                                                              |
-| applicationId     | string (UUID) | No       | FK → VisaApplication                                                                                                                                                                                           |
-| firstName         | string        | No       | Applicant first name                                                                                                                                                                                           |
-| lastName          | string        | No       | Applicant last name                                                                                                                                                                                            |
-| nationalityId     | string (UUID) | Yes      | FK → VisaNationality.Id — no EF navigation property, resolved via manual lookup                                                                                                                                |
-| passportPhotoPath | string        | Yes      | Relative path to passport photo on disk                                                                                                                                                                        |
-| portraitPhotoPath | string        | Yes      | Relative path to portrait photo on disk                                                                                                                                                                        |
-| documentPath      | string        | Yes      | Relative path to this applicant's individual visa PDF (`documents/{referenceNumber}/{firstName}_{lastName}.pdf`); `null` until uploaded via `POST /api/v1/applications/{id}/applicants/{applicantId}/document` |
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| id | string (UUID) | No | Unique identifier |
+| applicationId | string (UUID) | No | FK → VisaApplication |
+| firstName | string | No | Applicant first name |
+| lastName | string | No | Applicant last name |
+| nationalityId | string (UUID) | Yes | FK → VisaNationality.Id — no EF navigation property, resolved via manual lookup |
+| passportPhotoPath | string | Yes | Relative path to passport photo on disk |
+| portraitPhotoPath | string | Yes | Relative path to portrait photo on disk |
+| documentPath | string | Yes | Relative path to this applicant's individual visa PDF (`documents/{referenceNumber}/{firstName}_{lastName}.pdf`); `null` until uploaded via `POST /api/v1/applications/{id}/applicants/{applicantId}/document` |
+| religion | string | Yes | Applicant's religion — required when the applicant's nationality has `requiresExtraDetails: true`, `null` otherwise |
+| phoneInCountry | string | Yes | Applicant's phone number in their home country — required under the same condition |
+| usedOtherPassport | string | Yes | `"yes"` \| `"no"` — whether the applicant has used another passport to enter Vietnam; required under the same condition |
+| otherPassportNumber | string | Yes | Other passport number — required under the same condition |
+| violatedLaws | string | Yes | `"yes"` \| `"no"` — whether the applicant has violated Vietnamese laws/regulations; required under the same condition |
+| violationDetails | string | Yes | Violation details, if any — optional even when the other extra-details fields are required |
 
 ### VisaNationality
 
-| Field          | Type          | Nullable | Description                                                                                             |
-| -------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| id             | string (UUID) | No       | Unique identifier                                                                                       |
-| origName       | string        | No       | Name in English                                                                                         |
-| vietnameseName | string        | No       | Name in Vietnamese                                                                                      |
-| isEligible     | boolean       | No       | Whether the nationality is eligible for e-visa                                                          |
-| exemptionDays  | integer       | Yes      | Number of visa-free days granted; `null` means no exemption                                             |
-| groupId        | string (UUID) | Yes      | FK → NationalityGroup.Id; `null` if not assigned to a group. A nationality belongs to at most one group |
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| id | string (UUID) | No | Unique identifier |
+| origName | string | No | Name in English |
+| vietnameseName | string | No | Name in Vietnamese |
+| isEligible | boolean | No | Whether the nationality is eligible for e-visa |
+| exemptionDays | integer | Yes | Number of visa-free days granted; `null` means no exemption |
+| groupId | string (UUID) | Yes | FK → NationalityGroup.Id; `null` if not assigned to a group. A nationality belongs to at most one group |
+| requiresExtraDetails | boolean | No | When `true`, applicants of this nationality must submit the extra-details fields (religion, phone in home country, other-passport/violation questions, emergency contact, occupation, Vietnam stay/contact, Vietnam history) on `POST /api/v1/applications`. Independent of Restricted Group / PendingReview status — this flag is a standalone per-nationality setting (default: `false`) |
 
 ### NationalityGroup
 
 A named cohort of nationalities that visa types and processing options can restrict/exclude as a unit.
 
-| Field            | Type              | Nullable | Description            |
-| ---------------- | ----------------- | -------- | ---------------------- |
-| id               | string (UUID)     | No       | Unique identifier      |
-| name             | string            | No       | Group display name     |
-| createdDateTime  | string (ISO 8601) | No       | Record creation time   |
-| modifiedDateTime | string (ISO 8601) | No       | Last modification time |
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| id | string (UUID) | No | Unique identifier |
+| name | string | No | Group display name |
+| createdDateTime | string (ISO 8601) | No | Record creation time |
+| modifiedDateTime | string (ISO 8601) | No | Last modification time |
 
 ### VisaType
 
-| Field       | Type             | Nullable | Description              |
-| ----------- | ---------------- | -------- | ------------------------ |
-| id          | string (UUID)    | No       | Unique identifier        |
-| description | string           | No       | Visa type description    |
-| price       | number (decimal) | No       | Price for this visa type |
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| id | string (UUID) | No | Unique identifier |
+| description | string | No | Visa type description |
+| price | number (decimal) | No | Price for this visa type |
 
 ### VisaProcessing
 
-| Field       | Type             | Nullable | Description                                                            |
-| ----------- | ---------------- | -------- | ---------------------------------------------------------------------- |
-| id          | string (UUID)    | No       | Unique identifier                                                      |
-| description | string           | No       | Processing option description                                          |
-| price       | number (decimal) | No       | Price for this processing option                                       |
-| minDays     | integer          | Yes      | Minimum processing days; `null` if not configured                      |
-| maxDays     | integer          | Yes      | Maximum processing days; `null` if not configured                      |
-| isEmergency | boolean          | No       | Whether this tier is an emergency processing option (default: `false`) |
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| id | string (UUID) | No | Unique identifier |
+| description | string | No | Processing option description |
+| price | number (decimal) | No | Default price for this processing option |
+| minDays | integer | Yes | Minimum processing days; `null` if not configured |
+| maxDays | integer | Yes | Maximum processing days; `null` if not configured |
+| isEmergency | boolean | No | Whether this tier is an emergency processing option (default: `false`) |
+| effectivePrice | number (decimal) | No | Only present in the response of `GET /api/v1/visa-processing` when `nationalityId` is supplied — the price this nationality actually pays: the matching Nationality Price Override if one exists, otherwise equal to `price`. Absent from all other endpoints (`GET /{id}`, `POST`, `PUT`, and `GET /visa-processing` without `nationalityId`) |
+
+### VisaProcessingNationalityPrice (Nationality Price Override)
+
+A per-(VisaProcessing, Nationality) price that replaces a processing option's default `price` for applicants of that nationality. Independent of Excluded Group/Exception — a nationality can have a price override regardless of its exclusion/exception status, and having one never changes eligibility. At most one override exists per (VisaProcessing, Nationality) pair.
+
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| id | string (UUID) | No | Unique identifier |
+| visaProcessingId | string (UUID) | No | FK → VisaProcessing.Id |
+| nationalityId | string (UUID) | No | FK → VisaNationality.Id |
+| price | number (decimal) | No | The overridden price for this (VisaProcessing, Nationality) pair |
+| createdDateTime | string (ISO 8601) | No | Record creation time |
+| modifiedDateTime | string (ISO 8601) | No | Last modification time — updated whenever the price is changed via upsert |
 
 ---
 
@@ -184,13 +222,13 @@ List all applications with optional filtering and offset pagination. Sorted by `
 
 #### Query Parameters
 
-| Parameter | Type     | Required | Description                                      |
-| --------- | -------- | -------- | ------------------------------------------------ |
-| status    | integer  | No       | Filter by status value (see `ApplicationStatus`) |
-| from      | datetime | No       | Filter — created on or after this date           |
-| to        | datetime | No       | Filter — created on or before this date          |
-| page      | integer  | No       | Page number (default: `1`, min: `1`)             |
-| pageSize  | integer  | No       | Items per page (default: `20`, max: `100`)       |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| status | integer | No | Filter by status value (see `ApplicationStatus`) |
+| from | datetime | No | Filter — created on or after this date |
+| to | datetime | No | Filter — created on or before this date |
+| page | integer | No | Page number (default: `1`, min: `1`) |
+| pageSize | integer | No | Items per page (default: `20`, max: `100`) |
 
 #### Response `200 OK`
 
@@ -226,9 +264,15 @@ List all applications with optional filtering and offset pagination. Sorted by `
 
 Submit a new visa application with one or more applicants and their photo files.
 
-If `ProcessingOptionId` has an Excluded Group covering any applicant's nationality with no covering Exception, the request is rejected with `400` — check `GET /api/v1/visa-processing/{id}/excluded-groups` and `GET /api/v1/visa-processing/{id}/exceptions`, or filter the list via `?nationalityIds=` before letting the user select it.
+**All applicants on the application must share the same `NationalityId`.** This is unconditional — the request is rejected with `400` if any two applicants have different nationalities, regardless of whether the selected processing option has a Nationality Price Override configured. Group bookings that genuinely mix nationalities must be submitted as separate applications, one per nationality.
 
-If `VisaTypeId` has a Restricted Group covering any applicant's nationality with no Exception, the application is still accepted, but `status` is set to `6` (`PendingReview`) instead of `0` (`Submitted`). There is no pre-submit signal for this — check `GET /api/v1/visa-type/{id}/restricted-groups` and `GET /api/v1/visa-type/{id}/exceptions` client-side if you want to warn the user before they submit.
+The charged total is `(visaType.price + effectivePrice) × applicants.length`, where `effectivePrice` is the shared nationality's Nationality Price Override for `ProcessingOptionId` if one exists, otherwise `processingOption.price`. Check `GET /api/v1/visa-processing?nationalityId=...` beforehand to see the price that will actually be charged.
+
+If `ProcessingOptionId` has an Excluded Group covering the applicants' nationality with no covering Exception, the request is rejected with `400` — check `GET /api/v1/visa-processing/{id}/excluded-groups` and `GET /api/v1/visa-processing/{id}/exceptions`, or filter the list via `?nationalityId=` before letting the user select it.
+
+If `VisaTypeId` has a Restricted Group covering the applicants' nationality with no Exception, the application is still accepted, but `status` is set to `6` (`PendingReview`) instead of `0` (`Submitted`). There is no pre-submit signal for this — check `GET /api/v1/visa-type/{id}/restricted-groups` and `GET /api/v1/visa-type/{id}/exceptions` client-side if you want to warn the user before they submit.
+
+**Extra details.** If the shared applicant `NationalityId` has `requiresExtraDetails: true` (see `GET /api/v1/nationality/{id}`), all of the extra-details fields below (per-applicant and application-level) become required and the request is rejected with `400` if any is missing/blank, or if either enum field isn't exactly `"yes"` or `"no"`. `ViolationDetails` and `VnRelativeDetails` stay optional even in that case. When the nationality's `requiresExtraDetails` is `false`, none of these fields are validated and any values sent are stored as-is.
 
 **Content-Type:** `multipart/form-data`
 
@@ -236,32 +280,55 @@ If `VisaTypeId` has a Restricted Group covering any applicant's nationality with
 
 **Application-level fields**
 
-| Field              | Type          | Required | Description                          |
-| ------------------ | ------------- | -------- | ------------------------------------ |
-| PurposeOfTravel    | string        | Yes      | Reason for travel                    |
-| VisaTypeId         | string (UUID) | Yes      | ID of the selected visa type         |
-| ProcessingOptionId | string (UUID) | Yes      | ID of the selected processing option |
-| EntryDate          | datetime      | Yes      | Intended entry date                  |
-| ExitDate           | datetime      | Yes      | Intended exit date                   |
-| ContactFullName    | string        | Yes      | Primary contact full name            |
-| ContactPhone       | string        | Yes      | Primary contact phone                |
-| ContactEmail       | string        | Yes      | Primary contact email                |
-| ContactAddress     | string        | Yes      | Primary contact address              |
-| IsUrgentProcessing | boolean       | No       | Default `false`                      |
-| IsMultipleEntry    | boolean       | No       | Default `false`                      |
-| IsAirportTransfer  | boolean       | No       | Default `false`                      |
-| IsOther            | boolean       | No       | Default `false`                      |
-| Notes              | string        | No       | Free-text notes                      |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| PurposeOfTravel | string | Yes | Reason for travel |
+| VisaTypeId | string (UUID) | Yes | ID of the selected visa type |
+| ProcessingOptionId | string (UUID) | Yes | ID of the selected processing option |
+| EntryDate | datetime | Yes | Intended entry date |
+| ExitDate | datetime | Yes | Intended exit date |
+| ContactFullName | string | Yes | Primary contact full name |
+| ContactPhone | string | Yes | Primary contact phone |
+| ContactEmail | string | Yes | Primary contact email |
+| ContactAddress | string | Yes | Primary contact address |
+| CompanyName | string | No | Sponsoring/host company name in Vietnam. Not enforced server-side — client should require it for Business/Working purposes |
+| CompanyPhone | string | No | Company phone in Vietnam. Not enforced server-side — client should require it for Business/Working purposes |
+| CompanyAddress | string | No | Company address in Vietnam. Not enforced server-side — client should require it for Business/Working purposes |
+| IsUrgentProcessing | boolean | No | Default `false` |
+| IsMultipleEntry | boolean | No | Default `false` |
+| IsAirportTransfer | boolean | No | Default `false` |
+| IsOther | boolean | No | Default `false` |
+| Notes | string | No | Free-text notes |
+| EmergencyContactName | string | Conditional | Emergency contact full name. Required only when the shared nationality has `requiresExtraDetails: true` |
+| EmergencyContactPhone | string | Conditional | Emergency contact phone number. Required under the same condition |
+| EmergencyContactRelationship | string | Conditional | Emergency contact's relationship to the applicant. Required under the same condition |
+| EmergencyContactAddress | string | Conditional | Emergency contact address. Required under the same condition |
+| OccupationCompanyName | string | Conditional | Applicant's current employer name. Required under the same condition |
+| OccupationJobTitle | string | Conditional | Applicant's job title. Required under the same condition |
+| OccupationCompanyPhone | string | Conditional | Applicant's company phone number. Required under the same condition |
+| OccupationCompanyAddress | string | Conditional | Applicant's company address. Required under the same condition |
+| VnStayAddress | string | Conditional | Temporary resident address in Vietnam. Required under the same condition |
+| VnStayPhone | string | Conditional | Phone number in Vietnam. Required under the same condition |
+| VnVisitedLastYear | string | Conditional | `"yes"` \| `"no"` — visited Vietnam in the last year. Required under the same condition |
+| VnVisitDetails | string | Conditional | When and how long the applicant visited Vietnam. Required under the same condition |
+| VnHasRelatives | string | Conditional | `"yes"` \| `"no"` — has relatives in Vietnam. Required under the same condition |
+| VnRelativeDetails | string | No | Relative details, if any. Always optional |
 
 **Per-applicant fields** (repeat for each applicant using indexed keys)
 
-| Field                       | Type          | Required | Description                                                                                   |
-| --------------------------- | ------------- | -------- | --------------------------------------------------------------------------------------------- |
-| Applicants[N].FirstName     | string        | Yes      | Applicant first name                                                                          |
-| Applicants[N].LastName      | string        | Yes      | Applicant last name                                                                           |
-| Applicants[N].NationalityId | string (UUID) | Yes      | FK → VisaNationality.Id; rejected with `400` if it doesn't resolve to an existing nationality |
-| Applicants[N].PassportPhoto | file          | No       | Passport photo — max 5 MB                                                                     |
-| Applicants[N].PortraitPhoto | file          | No       | Portrait photo — max 5 MB                                                                     |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| Applicants[N].FirstName | string | Yes | Applicant first name |
+| Applicants[N].LastName | string | Yes | Applicant last name |
+| Applicants[N].NationalityId | string (UUID) | Yes | FK → VisaNationality.Id; rejected with `400` if it doesn't resolve to an existing nationality |
+| Applicants[N].PassportPhoto | file | No | Passport photo — max 5 MB |
+| Applicants[N].PortraitPhoto | file | No | Portrait photo — max 5 MB |
+| Applicants[N].Religion | string | Conditional | Applicant's religion. Required only when the shared nationality has `requiresExtraDetails: true` |
+| Applicants[N].PhoneInCountry | string | Conditional | Applicant's phone number in their home country. Required under the same condition |
+| Applicants[N].UsedOtherPassport | string | Conditional | `"yes"` \| `"no"` — used another passport to enter Vietnam. Required under the same condition |
+| Applicants[N].OtherPassportNumber | string | Conditional | Other passport number. Required under the same condition |
+| Applicants[N].ViolatedLaws | string | Conditional | `"yes"` \| `"no"` — violated Vietnamese laws/regulations. Required under the same condition |
+| Applicants[N].ViolationDetails | string | No | Violation details, if any. Always optional |
 
 > Replace `N` with `0`, `1`, `2`, … for each applicant.
 
@@ -302,6 +369,28 @@ Also returned (same shape, different `message`) when the processing option is Ex
 }
 ```
 
+Also returned when applicants don't all share the same nationality:
+
+```json
+{
+  "statusCode": 400,
+  "data": null,
+  "message": "All applicants on an application must share the same nationality.",
+  "timestamp": "2026-06-07T10:00:00"
+}
+```
+
+Also returned (same shape, different `message`) when the shared nationality has `requiresExtraDetails: true` and a required extra-details field is missing/blank, e.g.:
+
+```json
+{
+  "statusCode": 400,
+  "data": null,
+  "message": "Religion is required for the selected nationality.",
+  "timestamp": "2026-06-07T10:00:00"
+}
+```
+
 ---
 
 ### GET /api/v1/applications/track
@@ -310,10 +399,10 @@ Look up an application by reference number and contact email. Returns the full s
 
 #### Query Parameters
 
-| Parameter       | Type   | Required | Description                                      |
-| --------------- | ------ | -------- | ------------------------------------------------ |
-| referenceNumber | string | Yes      | Application reference number (e.g. `EV3A9F1C2B`) |
-| email           | string | Yes      | Contact email used at submission                 |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| referenceNumber | string | Yes | Application reference number (e.g. `EV3A9F1C2B`) |
+| email | string | Yes | Contact email used at submission |
 
 #### Response `200 OK`
 
@@ -334,12 +423,7 @@ Look up an application by reference number and contact email. Returns the full s
     "processingStartDate": "2026-06-08T03:00:00Z",
     "completedDateTime": null,
     "applicants": [
-      {
-        "firstName": "John",
-        "lastName": "Doe",
-        "nationalityId": "6b7e1a2c-1111-4c1a-9f2b-abc123456789",
-        "nationalityName": "American"
-      }
+      { "firstName": "John", "lastName": "Doe", "nationalityId": "6b7e1a2c-1111-4c1a-9f2b-abc123456789", "nationalityName": "American" }
     ]
   },
   "message": "Application found.",
@@ -380,10 +464,10 @@ Download the approved visa document(s) for an application. Validates both refere
 
 #### Query Parameters
 
-| Parameter       | Type   | Required | Description                      |
-| --------------- | ------ | -------- | -------------------------------- |
-| referenceNumber | string | Yes      | Application reference number     |
-| email           | string | Yes      | Contact email used at submission |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| referenceNumber | string | Yes | Application reference number |
+| email | string | Yes | Contact email used at submission |
 
 #### Response `200 OK` — single applicant
 
@@ -433,9 +517,9 @@ Get full detail for a single application, including all applicants and payment r
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Application ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Application ID |
 
 #### Response `200 OK`
 
@@ -455,11 +539,28 @@ Get full detail for a single application, including all applicants and payment r
     "contactPhone": "+1234567890",
     "contactEmail": "john@example.com",
     "contactAddress": "123 Main St",
+    "companyName": null,
+    "companyPhone": null,
+    "companyAddress": null,
     "isUrgentProcessing": false,
     "isMultipleEntry": false,
     "isAirportTransfer": false,
     "isOther": false,
     "notes": null,
+    "emergencyContactName": null,
+    "emergencyContactPhone": null,
+    "emergencyContactRelationship": null,
+    "emergencyContactAddress": null,
+    "occupationCompanyName": null,
+    "occupationJobTitle": null,
+    "occupationCompanyPhone": null,
+    "occupationCompanyAddress": null,
+    "vnStayAddress": null,
+    "vnStayPhone": null,
+    "vnVisitedLastYear": null,
+    "vnVisitDetails": null,
+    "vnHasRelatives": null,
+    "vnRelativeDetails": null,
     "documentPath": null,
     "createdDateTime": "2026-06-07T10:00:00",
     "modifiedDateTime": "2026-06-07T10:00:00",
@@ -472,13 +573,19 @@ Get full detail for a single application, including all applicants and payment r
         "nationalityName": "American",
         "passportPhotoPath": "uploads/3fa85f64.../0_passport_photo.jpg",
         "portraitPhotoPath": "uploads/3fa85f64.../0_portrait_photo.jpg",
-        "documentPath": null
+        "documentPath": null,
+        "religion": null,
+        "phoneInCountry": null,
+        "usedOtherPassport": null,
+        "otherPassportNumber": null,
+        "violatedLaws": null,
+        "violationDetails": null
       }
     ],
     "payment": {
       "id": "5gc07h86-7939-6784-d5he-4e185h88chc8",
       "stripeIntentId": "pi_3abc123",
-      "amount": 35.0,
+      "amount": 35.00,
       "currency": "usd",
       "status": 0,
       "createdDateTime": "2026-06-07T10:00:00"
@@ -510,15 +617,15 @@ Upload a visa PDF for an approved application. Replaces any previously stored do
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Application ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Application ID |
 
 #### Request Fields
 
-| Field | Type | Required | Description                                  |
-| ----- | ---- | -------- | -------------------------------------------- |
-| file  | file | Yes      | Visa PDF — `application/pdf` only, max 10 MB |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| file | file | Yes | Visa PDF — `application/pdf` only, max 10 MB |
 
 #### Response `204 No Content`
 
@@ -526,13 +633,13 @@ No response body. `documentPath` on the application record is updated to `docume
 
 #### Error responses
 
-| Scenario                             | Status | Message                                                      |
-| ------------------------------------ | ------ | ------------------------------------------------------------ |
-| Application not found                | 404    | `"Application '{id}' not found."`                            |
-| Application not in `Approved` status | 422    | `"Document can only be uploaded for Approved applications."` |
-| File is not a PDF                    | 400    | `"Only PDF files are accepted."`                             |
-| No file provided                     | 400    | `"No file provided."`                                        |
-| File exceeds 10 MB                   | 413    | `"File exceeds the 10 MB limit."`                            |
+| Scenario | Status | Message |
+|---|---|---|
+| Application not found | 404 | `"Application '{id}' not found."` |
+| Application not in `Approved` status | 422 | `"Document can only be uploaded for Approved applications."` |
+| File is not a PDF | 400 | `"Only PDF files are accepted."` |
+| No file provided | 400 | `"No file provided."` |
+| File exceeds 10 MB | 413 | `"File exceeds the 10 MB limit."` |
 
 ---
 
@@ -544,16 +651,16 @@ Upload an individual visa PDF for a specific applicant on an approved applicatio
 
 #### Path Parameters
 
-| Parameter   | Type          | Required | Description                                   |
-| ----------- | ------------- | -------- | --------------------------------------------- |
-| id          | string (UUID) | Yes      | Application ID                                |
-| applicantId | string (UUID) | Yes      | Applicant ID — must belong to the application |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Application ID |
+| applicantId | string (UUID) | Yes | Applicant ID — must belong to the application |
 
 #### Request Fields
 
-| Field | Type | Required | Description                                  |
-| ----- | ---- | -------- | -------------------------------------------- |
-| file  | file | Yes      | Visa PDF — `application/pdf` only, max 10 MB |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| file | file | Yes | Visa PDF — `application/pdf` only, max 10 MB |
 
 #### Response `204 No Content`
 
@@ -561,14 +668,14 @@ No response body. `documentPath` on the applicant record is updated to `document
 
 #### Error responses
 
-| Scenario                                | Status | Message                                                      |
-| --------------------------------------- | ------ | ------------------------------------------------------------ |
-| Application not found                   | 404    | `"Application '{id}' not found."`                            |
-| Applicant not found on this application | 404    | `"Applicant '{applicantId}' not found on this application."` |
-| Application not in `Approved` status    | 422    | `"Document can only be uploaded for Approved applications."` |
-| File is not a PDF                       | 400    | `"Only PDF files are accepted."`                             |
-| No file provided                        | 400    | `"No file provided."`                                        |
-| File exceeds 10 MB                      | 413    | `"File exceeds the 10 MB limit."`                            |
+| Scenario | Status | Message |
+|---|---|---|
+| Application not found | 404 | `"Application '{id}' not found."` |
+| Applicant not found on this application | 404 | `"Applicant '{applicantId}' not found on this application."` |
+| Application not in `Approved` status | 422 | `"Document can only be uploaded for Approved applications."` |
+| File is not a PDF | 400 | `"Only PDF files are accepted."` |
+| No file provided | 400 | `"No file provided."` |
+| File exceeds 10 MB | 413 | `"File exceeds the 10 MB limit."` |
 
 ---
 
@@ -580,31 +687,54 @@ Replace the contact details and applicant list for an application. Only allowed 
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Application ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Application ID |
 
 #### Request Body
 
-| Field                       | Type          | Required | Description                                                                                   |
-| --------------------------- | ------------- | -------- | --------------------------------------------------------------------------------------------- |
-| contactFullName             | string        | Yes      | Primary contact full name                                                                     |
-| contactPhone                | string        | Yes      | Primary contact phone                                                                         |
-| contactEmail                | string        | Yes      | Primary contact email                                                                         |
-| contactAddress              | string        | Yes      | Primary contact address                                                                       |
-| entryDate                   | datetime      | Yes      | Intended entry date                                                                           |
-| exitDate                    | datetime      | Yes      | Intended exit date                                                                            |
-| visaTypeId                  | string (UUID) | Yes      | ID of the selected visa type                                                                  |
-| processingOptionId          | string (UUID) | Yes      | ID of the selected processing option                                                          |
-| isUrgentProcessing          | boolean       | No       | Default `false`                                                                               |
-| isMultipleEntry             | boolean       | No       | Default `false`                                                                               |
-| isAirportTransfer           | boolean       | No       | Default `false`                                                                               |
-| isOther                     | boolean       | No       | Default `false`                                                                               |
-| notes                       | string        | No       | Free-text notes                                                                               |
-| applicants                  | array         | Yes      | Min 1 item — replaces all existing applicants                                                 |
-| applicants[N].firstName     | string        | Yes      | Applicant first name                                                                          |
-| applicants[N].lastName      | string        | Yes      | Applicant last name                                                                           |
-| applicants[N].nationalityId | string (UUID) | Yes      | FK → VisaNationality.Id; rejected with `400` if it doesn't resolve to an existing nationality |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| contactFullName | string | Yes | Primary contact full name |
+| contactPhone | string | Yes | Primary contact phone |
+| contactEmail | string | Yes | Primary contact email |
+| contactAddress | string | Yes | Primary contact address |
+| companyName | string | No | Sponsoring/host company name in Vietnam. Not enforced server-side — client should require it for Business/Working purposes |
+| companyPhone | string | No | Company phone in Vietnam. Not enforced server-side — client should require it for Business/Working purposes |
+| companyAddress | string | No | Company address in Vietnam. Not enforced server-side — client should require it for Business/Working purposes |
+| entryDate | datetime | Yes | Intended entry date |
+| exitDate | datetime | Yes | Intended exit date |
+| visaTypeId | string (UUID) | Yes | ID of the selected visa type |
+| processingOptionId | string (UUID) | Yes | ID of the selected processing option |
+| isUrgentProcessing | boolean | No | Default `false` |
+| isMultipleEntry | boolean | No | Default `false` |
+| isAirportTransfer | boolean | No | Default `false` |
+| isOther | boolean | No | Default `false` |
+| notes | string | No | Free-text notes |
+| emergencyContactName | string | Conditional | Required only when the shared nationality across `applicants` has `requiresExtraDetails: true` |
+| emergencyContactPhone | string | Conditional | Required under the same condition |
+| emergencyContactRelationship | string | Conditional | Required under the same condition |
+| emergencyContactAddress | string | Conditional | Required under the same condition |
+| occupationCompanyName | string | Conditional | Required under the same condition |
+| occupationJobTitle | string | Conditional | Required under the same condition |
+| occupationCompanyPhone | string | Conditional | Required under the same condition |
+| occupationCompanyAddress | string | Conditional | Required under the same condition |
+| vnStayAddress | string | Conditional | Required under the same condition |
+| vnStayPhone | string | Conditional | Required under the same condition |
+| vnVisitedLastYear | string | Conditional | `"yes"` \| `"no"`; required under the same condition |
+| vnVisitDetails | string | Conditional | Required under the same condition |
+| vnHasRelatives | string | Conditional | `"yes"` \| `"no"`; required under the same condition |
+| vnRelativeDetails | string | No | Always optional |
+| applicants | array | Yes | Min 1 item — replaces all existing applicants |
+| applicants[N].firstName | string | Yes | Applicant first name |
+| applicants[N].lastName | string | Yes | Applicant last name |
+| applicants[N].nationalityId | string (UUID) | Yes | FK → VisaNationality.Id; rejected with `400` if it doesn't resolve to an existing nationality |
+| applicants[N].religion | string | Conditional | Required only when the applicants' shared nationality has `requiresExtraDetails: true` |
+| applicants[N].phoneInCountry | string | Conditional | Required under the same condition |
+| applicants[N].usedOtherPassport | string | Conditional | `"yes"` \| `"no"`; required under the same condition |
+| applicants[N].otherPassportNumber | string | Conditional | Required under the same condition |
+| applicants[N].violatedLaws | string | Conditional | `"yes"` \| `"no"`; required under the same condition |
+| applicants[N].violationDetails | string | No | Always optional |
 
 #### Response `200 OK`
 
@@ -639,6 +769,19 @@ Replace the contact details and applicant list for an application. Only allowed 
 }
 ```
 
+#### Response `400 Bad Request`
+
+Returned when the shared nationality across `applicants` has `requiresExtraDetails: true` and a required extra-details field is missing/blank (same validation as `POST /api/v1/applications`):
+
+```json
+{
+  "statusCode": 400,
+  "data": null,
+  "message": "Emergency contact full name is required for the selected nationality.",
+  "timestamp": "2026-06-09T10:00:00"
+}
+```
+
 ---
 
 ### DELETE /api/v1/applications/{id}
@@ -647,9 +790,9 @@ Permanently delete an application. Only allowed when status is `Cancelled` (`5`)
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Application ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Application ID |
 
 #### Response `200 OK`
 
@@ -692,9 +835,9 @@ Get the payment record for an application.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Application ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Application ID |
 
 #### Response `200 OK`
 
@@ -704,7 +847,7 @@ Get the payment record for an application.
   "data": {
     "id": "5gc07h86-7939-6784-d5he-4e185h88chc8",
     "stripeIntentId": "pi_3abc123",
-    "amount": 35.0,
+    "amount": 35.00,
     "currency": "usd",
     "status": 1,
     "createdDateTime": "2026-06-07T10:00:00"
@@ -735,16 +878,16 @@ Update the status of an application. Cannot be used to transition to `Submitted`
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Application ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Application ID |
 
 #### Request Body
 
-| Field  | Type    | Required | Description                                          |
-| ------ | ------- | -------- | ---------------------------------------------------- |
-| status | integer | Yes      | Target status value (any except `0` — Submitted)     |
-| reason | string  | No       | Optional reason/note sent in the status-change email |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| status | integer | Yes | Target status value (any except `0` — Submitted) |
+| reason | string | No | Optional reason/note sent in the status-change email |
 
 ```json
 {
@@ -794,9 +937,9 @@ Confirm that a Stripe payment has been completed for an application. Updates the
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Application ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Application ID |
 
 #### Response `200 OK`
 
@@ -845,7 +988,8 @@ Get all nationalities.
       "origName": "Vietnamese",
       "vietnameseName": "Việt Nam",
       "isEligible": true,
-      "exemptionDays": 90
+      "exemptionDays": 90,
+      "requiresExtraDetails": false
     }
   ],
   "message": "Success",
@@ -861,9 +1005,9 @@ Get a single nationality by ID.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Nationality ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Nationality ID |
 
 #### Response `200 OK`
 
@@ -875,7 +1019,8 @@ Get a single nationality by ID.
     "origName": "Vietnamese",
     "vietnameseName": "Việt Nam",
     "isEligible": true,
-    "exemptionDays": 90
+    "exemptionDays": 90,
+    "requiresExtraDetails": false
   },
   "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
@@ -901,13 +1046,14 @@ Create a new nationality.
 
 #### Request Body
 
-| Field          | Type          | Required | Description                                                      |
-| -------------- | ------------- | -------- | ---------------------------------------------------------------- |
-| origName       | string        | Yes      | Name in English                                                  |
-| vietnameseName | string        | Yes      | Name in Vietnamese                                               |
-| isEligible     | boolean       | No       | Eligible for e-visa (default: `false`)                           |
-| exemptionDays  | integer       | No       | Visa-free days; omit or send `null` for no exemption             |
-| groupId        | string (UUID) | No       | FK → NationalityGroup.Id; omit or send `null` to leave ungrouped |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| origName | string | Yes | Name in English |
+| vietnameseName | string | Yes | Name in Vietnamese |
+| isEligible | boolean | No | Eligible for e-visa (default: `false`) |
+| exemptionDays | integer | No | Visa-free days; omit or send `null` for no exemption |
+| groupId | string (UUID) | No | FK → NationalityGroup.Id; omit or send `null` to leave ungrouped |
+| requiresExtraDetails | boolean | No | When `true`, applicants of this nationality must submit the extra-details fields on `POST /api/v1/applications` (default: `false`) |
 
 ```json
 {
@@ -915,7 +1061,8 @@ Create a new nationality.
   "vietnameseName": "Việt Nam",
   "isEligible": true,
   "exemptionDays": 90,
-  "groupId": null
+  "groupId": null,
+  "requiresExtraDetails": false
 }
 ```
 
@@ -929,7 +1076,8 @@ Create a new nationality.
     "origName": "Vietnamese",
     "vietnameseName": "Việt Nam",
     "isEligible": true,
-    "exemptionDays": null
+    "exemptionDays": null,
+    "requiresExtraDetails": false
   },
   "message": "Created successfully",
   "timestamp": "2026-06-06T10:00:00"
@@ -944,9 +1092,9 @@ Update an existing nationality.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Nationality ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Nationality ID |
 
 #### Request Body
 
@@ -962,7 +1110,8 @@ Same schema as `POST /api/v1/nationality`. Send `"exemptionDays": null` to clear
     "origName": "Vietnamese",
     "vietnameseName": "Việt Nam",
     "isEligible": false,
-    "exemptionDays": null
+    "exemptionDays": null,
+    "requiresExtraDetails": false
   },
   "message": "Updated successfully",
   "timestamp": "2026-06-06T10:00:00"
@@ -988,9 +1137,9 @@ Delete a nationality.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description    |
-| --------- | ------------- | -------- | -------------- |
-| id        | string (UUID) | Yes      | Nationality ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Nationality ID |
 
 #### Response `200 OK`
 
@@ -1036,12 +1185,7 @@ Get all nationality groups.
 {
   "statusCode": 200,
   "data": [
-    {
-      "id": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6",
-      "name": "High Risk",
-      "createdDateTime": "2026-06-06T10:00:00",
-      "modifiedDateTime": "2026-06-06T10:00:00"
-    }
+    { "id": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6", "name": "High Risk", "createdDateTime": "2026-06-06T10:00:00", "modifiedDateTime": "2026-06-06T10:00:00" }
   ],
   "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
@@ -1059,12 +1203,7 @@ Get a single nationality group by ID.
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Nationality group not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Nationality group not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1077,9 +1216,9 @@ Create a new nationality group.
 
 #### Request Body
 
-| Field | Type   | Required | Description        |
-| ----- | ------ | -------- | ------------------ |
-| name  | string | Yes      | Group display name |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | Group display name |
 
 ```json
 { "name": "High Risk" }
@@ -1130,7 +1269,7 @@ Get all visa types.
     {
       "id": "a1b2c3d4-1111-4562-b3fc-2c963f66afa6",
       "description": "Single Entry",
-      "price": 25.0
+      "price": 25.00
     }
   ],
   "message": "Success",
@@ -1146,9 +1285,9 @@ Get a single visa type by ID.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description  |
-| --------- | ------------- | -------- | ------------ |
-| id        | string (UUID) | Yes      | Visa type ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Visa type ID |
 
 #### Response `200 OK`
 
@@ -1158,7 +1297,7 @@ Get a single visa type by ID.
   "data": {
     "id": "a1b2c3d4-1111-4562-b3fc-2c963f66afa6",
     "description": "Single Entry",
-    "price": 25.0
+    "price": 25.00
   },
   "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
@@ -1184,15 +1323,15 @@ Create a new visa type.
 
 #### Request Body
 
-| Field       | Type             | Required | Description              |
-| ----------- | ---------------- | -------- | ------------------------ |
-| description | string           | Yes      | Visa type description    |
-| price       | number (decimal) | Yes      | Price for this visa type |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| description | string | Yes | Visa type description |
+| price | number (decimal) | Yes | Price for this visa type |
 
 ```json
 {
   "description": "Single Entry",
-  "price": 25.0
+  "price": 25.00
 }
 ```
 
@@ -1204,7 +1343,7 @@ Create a new visa type.
   "data": {
     "id": "a1b2c3d4-1111-4562-b3fc-2c963f66afa6",
     "description": "Single Entry",
-    "price": 25.0
+    "price": 25.00
   },
   "message": "Created successfully",
   "timestamp": "2026-06-06T10:00:00"
@@ -1219,9 +1358,9 @@ Update an existing visa type.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description  |
-| --------- | ------------- | -------- | ------------ |
-| id        | string (UUID) | Yes      | Visa type ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Visa type ID |
 
 #### Request Body
 
@@ -1235,7 +1374,7 @@ Same schema as `POST /api/v1/visa-type`.
   "data": {
     "id": "a1b2c3d4-1111-4562-b3fc-2c963f66afa6",
     "description": "Multiple Entry",
-    "price": 30.0
+    "price": 30.00
   },
   "message": "Updated successfully",
   "timestamp": "2026-06-06T10:00:00"
@@ -1261,9 +1400,9 @@ Delete a visa type.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description  |
-| --------- | ------------- | -------- | ------------ |
-| id        | string (UUID) | Yes      | Visa type ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Visa type ID |
 
 #### Response `200 OK`
 
@@ -1301,12 +1440,7 @@ Get the `NationalityGroup`s flagged as Restricted for this visa type. An applica
 {
   "statusCode": 200,
   "data": [
-    {
-      "id": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6",
-      "name": "High Risk",
-      "createdDateTime": "2026-06-06T10:00:00",
-      "modifiedDateTime": "2026-06-06T10:00:00"
-    }
+    { "id": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6", "name": "High Risk", "createdDateTime": "2026-06-06T10:00:00", "modifiedDateTime": "2026-06-06T10:00:00" }
   ],
   "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
@@ -1316,12 +1450,7 @@ Get the `NationalityGroup`s flagged as Restricted for this visa type. An applica
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Visa type not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Visa type not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1335,23 +1464,13 @@ Add a `NationalityGroup` as a Restricted Group for this visa type. Idempotent �
 #### Response `200 OK`
 
 ```json
-{
-  "statusCode": 200,
-  "data": "",
-  "message": "Restricted group added successfully",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 200, "data": "", "message": "Restricted group added successfully", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Visa type or nationality group not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Visa type or nationality group not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1365,12 +1484,7 @@ Remove a Restricted Group from this visa type.
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Restricted group not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Restricted group not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1387,14 +1501,7 @@ Get the `VisaNationality` records that have an Exception for this visa type — 
 {
   "statusCode": 200,
   "data": [
-    {
-      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "origName": "Vietnamese",
-      "vietnameseName": "Việt Nam",
-      "isEligible": true,
-      "exemptionDays": 90,
-      "groupId": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6"
-    }
+    { "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "origName": "Vietnamese", "vietnameseName": "Việt Nam", "isEligible": true, "exemptionDays": 90, "groupId": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6", "requiresExtraDetails": false }
   ],
   "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
@@ -1404,12 +1511,7 @@ Get the `VisaNationality` records that have an Exception for this visa type — 
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Visa type not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Visa type not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1422,9 +1524,9 @@ Add an Exception for a nationality on this visa type. Idempotent. The exception 
 
 #### Request Body
 
-| Field         | Type          | Required | Description             |
-| ------------- | ------------- | -------- | ----------------------- |
-| nationalityId | string (UUID) | Yes      | FK → VisaNationality.Id |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| nationalityId | string (UUID) | Yes | FK → VisaNationality.Id |
 
 ```json
 { "nationalityId": "3fa85f64-5717-4562-b3fc-2c963f66afa6" }
@@ -1433,23 +1535,13 @@ Add an Exception for a nationality on this visa type. Idempotent. The exception 
 #### Response `200 OK`
 
 ```json
-{
-  "statusCode": 200,
-  "data": "",
-  "message": "Exception added successfully",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 200, "data": "", "message": "Exception added successfully", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Visa type or nationality not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Visa type or nationality not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1467,12 +1559,7 @@ Same schema as `POST /api/v1/visa-type/{id}/exceptions`.
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Exception not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Exception not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1485,15 +1572,15 @@ Base path: `/api/v1/visa-processing`
 
 ### GET /api/v1/visa-processing
 
-Get all visa processing options. When `nationalityIds` is supplied, options that have an Excluded Group covering any of the given nationalities — with no covering Exception — are removed from the returned list entirely (contrast with Visa Type Restricted Groups, which are never filtered out of `GET /api/v1/visa-type`).
+Get all visa processing options. When `nationalityId` is supplied, options that have an Excluded Group covering that nationality — with no covering Exception — are removed from the returned list entirely (contrast with Visa Type Restricted Groups, which are never filtered out of `GET /api/v1/visa-type`), and each remaining option's `effectivePrice` reflects that nationality's Nationality Price Override, if any.
 
 #### Query Parameters
 
-| Parameter      | Type   | Required | Description                                                                                                                                     |
-| -------------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| nationalityIds | string | No       | Comma-separated list of `VisaNationality.Id` UUIDs. When present, options excluded for any of these nationalities are omitted from the response |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| nationalityId | string (UUID) | No | A single `VisaNationality.Id`. When present, options excluded for this nationality are omitted, and each returned option's `effectivePrice` is resolved for it. When omitted, `effectivePrice` equals `price` for every option (unaffected by any configured overrides) |
 
-#### Response `200 OK`
+#### Response `200 OK` — without `nationalityId`
 
 ```json
 {
@@ -1502,13 +1589,46 @@ Get all visa processing options. When `nationalityIds` is supplied, options that
     {
       "id": "b2c3d4e5-2222-4562-b3fc-2c963f66afa6",
       "description": "Standard",
-      "price": 10.0,
+      "price": 10.00,
+      "effectivePrice": 10.00,
       "minDays": 5,
       "maxDays": 7,
       "isEmergency": false
     }
   ],
   "message": "Success",
+  "timestamp": "2026-06-06T10:00:00"
+}
+```
+
+#### Response `200 OK` — with `?nationalityId=...` and an override configured
+
+```json
+{
+  "statusCode": 200,
+  "data": [
+    {
+      "id": "b2c3d4e5-2222-4562-b3fc-2c963f66afa6",
+      "description": "Standard",
+      "price": 10.00,
+      "effectivePrice": 8.00,
+      "minDays": 5,
+      "maxDays": 7,
+      "isEmergency": false
+    }
+  ],
+  "message": "Success",
+  "timestamp": "2026-06-06T10:00:00"
+}
+```
+
+#### Response `400 Bad Request`
+
+```json
+{
+  "statusCode": 400,
+  "data": null,
+  "message": "Invalid nationalityId 'not-a-guid'.",
   "timestamp": "2026-06-06T10:00:00"
 }
 ```
@@ -1521,9 +1641,9 @@ Get a single visa processing option by ID.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description        |
-| --------- | ------------- | -------- | ------------------ |
-| id        | string (UUID) | Yes      | Visa processing ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Visa processing ID |
 
 #### Response `200 OK`
 
@@ -1533,7 +1653,7 @@ Get a single visa processing option by ID.
   "data": {
     "id": "b2c3d4e5-2222-4562-b3fc-2c963f66afa6",
     "description": "Standard",
-    "price": 10.0,
+    "price": 10.00,
     "minDays": 5,
     "maxDays": 7,
     "isEmergency": false
@@ -1562,18 +1682,18 @@ Create a new visa processing option.
 
 #### Request Body
 
-| Field       | Type             | Required | Description                               |
-| ----------- | ---------------- | -------- | ----------------------------------------- |
-| description | string           | Yes      | Processing option description             |
-| price       | number (decimal) | Yes      | Price for this processing option          |
-| minDays     | integer          | No       | Minimum processing days                   |
-| maxDays     | integer          | No       | Maximum processing days                   |
-| isEmergency | boolean          | No       | Mark as emergency tier (default: `false`) |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| description | string | Yes | Processing option description |
+| price | number (decimal) | Yes | Price for this processing option |
+| minDays | integer | No | Minimum processing days |
+| maxDays | integer | No | Maximum processing days |
+| isEmergency | boolean | No | Mark as emergency tier (default: `false`) |
 
 ```json
 {
   "description": "Standard",
-  "price": 10.0,
+  "price": 10.00,
   "isEmergency": false
 }
 ```
@@ -1586,7 +1706,7 @@ Create a new visa processing option.
   "data": {
     "id": "b2c3d4e5-2222-4562-b3fc-2c963f66afa6",
     "description": "Standard",
-    "price": 10.0,
+    "price": 10.00,
     "minDays": 5,
     "maxDays": 7,
     "isEmergency": false
@@ -1604,9 +1724,9 @@ Update an existing visa processing option.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description        |
-| --------- | ------------- | -------- | ------------------ |
-| id        | string (UUID) | Yes      | Visa processing ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Visa processing ID |
 
 #### Request Body
 
@@ -1620,7 +1740,7 @@ Same schema as `POST /api/v1/visa-processing`.
   "data": {
     "id": "b2c3d4e5-2222-4562-b3fc-2c963f66afa6",
     "description": "Express",
-    "price": 20.0,
+    "price": 20.00,
     "minDays": 2,
     "maxDays": 3,
     "isEmergency": false
@@ -1649,9 +1769,9 @@ Delete a visa processing option.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description        |
-| --------- | ------------- | -------- | ------------------ |
-| id        | string (UUID) | Yes      | Visa processing ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Visa processing ID |
 
 #### Response `200 OK`
 
@@ -1679,7 +1799,7 @@ Delete a visa processing option.
 
 ### GET /api/v1/visa-processing/{id}/excluded-groups
 
-Get the `NationalityGroup`s flagged as Excluded for this processing option. An applicant whose nationality belongs to one of these groups cannot select this option — it's dropped from `GET /api/v1/visa-processing?nationalityIds=...`, and submitting it anyway via `POST /api/v1/applications` is rejected outright with `400` rather than routed to `PendingReview` — unless an Exception covers that (VisaProcessing, Nationality) pair, in which case the option is fully available again. See `GET /api/v1/visa-processing/{id}/exceptions`.
+Get the `NationalityGroup`s flagged as Excluded for this processing option. An applicant whose nationality belongs to one of these groups cannot select this option — it's dropped from `GET /api/v1/visa-processing?nationalityId=...`, and submitting it anyway via `POST /api/v1/applications` is rejected outright with `400` rather than routed to `PendingReview` — unless an Exception covers that (VisaProcessing, Nationality) pair, in which case the option is fully available again. See `GET /api/v1/visa-processing/{id}/exceptions`.
 
 **Authorization:** Public
 
@@ -1689,12 +1809,7 @@ Get the `NationalityGroup`s flagged as Excluded for this processing option. An a
 {
   "statusCode": 200,
   "data": [
-    {
-      "id": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6",
-      "name": "High Risk",
-      "createdDateTime": "2026-06-06T10:00:00",
-      "modifiedDateTime": "2026-06-06T10:00:00"
-    }
+    { "id": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6", "name": "High Risk", "createdDateTime": "2026-06-06T10:00:00", "modifiedDateTime": "2026-06-06T10:00:00" }
   ],
   "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
@@ -1704,12 +1819,7 @@ Get the `NationalityGroup`s flagged as Excluded for this processing option. An a
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Visa processing not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Visa processing not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1723,23 +1833,13 @@ Add a `NationalityGroup` as an Excluded Group for this processing option. Idempo
 #### Response `200 OK`
 
 ```json
-{
-  "statusCode": 200,
-  "data": "",
-  "message": "Excluded group added successfully",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 200, "data": "", "message": "Excluded group added successfully", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Visa processing or nationality group not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Visa processing or nationality group not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1753,12 +1853,7 @@ Remove an Excluded Group from this processing option.
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Excluded group not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Excluded group not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1775,14 +1870,7 @@ Get the `VisaNationality` records that have an Exception for this processing opt
 {
   "statusCode": 200,
   "data": [
-    {
-      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "origName": "Vietnamese",
-      "vietnameseName": "Việt Nam",
-      "isEligible": true,
-      "exemptionDays": 90,
-      "groupId": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6"
-    }
+    { "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "origName": "Vietnamese", "vietnameseName": "Việt Nam", "isEligible": true, "exemptionDays": 90, "groupId": "d1e2f3a4-0001-4562-b3fc-2c963f66afa6", "requiresExtraDetails": false }
   ],
   "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
@@ -1792,12 +1880,7 @@ Get the `VisaNationality` records that have an Exception for this processing opt
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Visa processing not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Visa processing not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1810,9 +1893,9 @@ Add an Exception for a nationality on this processing option. Idempotent. The ex
 
 #### Request Body
 
-| Field         | Type          | Required | Description             |
-| ------------- | ------------- | -------- | ----------------------- |
-| nationalityId | string (UUID) | Yes      | FK → VisaNationality.Id |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| nationalityId | string (UUID) | Yes | FK → VisaNationality.Id |
 
 ```json
 { "nationalityId": "3fa85f64-5717-4562-b3fc-2c963f66afa6" }
@@ -1821,23 +1904,13 @@ Add an Exception for a nationality on this processing option. Idempotent. The ex
 #### Response `200 OK`
 
 ```json
-{
-  "statusCode": 200,
-  "data": "",
-  "message": "Exception added successfully",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 200, "data": "", "message": "Exception added successfully", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 #### Response `404 Not Found`
 
 ```json
-{
-  "statusCode": 404,
-  "data": null,
-  "message": "Visa processing or nationality not found",
-  "timestamp": "2026-06-06T10:00:00"
-}
+{ "statusCode": 404, "data": null, "message": "Visa processing or nationality not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1855,12 +1928,96 @@ Same schema as `POST /api/v1/visa-processing/{id}/exceptions`.
 #### Response `404 Not Found`
 
 ```json
+{ "statusCode": 404, "data": null, "message": "Exception not found", "timestamp": "2026-06-06T10:00:00" }
+```
+
+---
+
+### GET /api/v1/visa-processing/{id}/nationality-prices
+
+Get the Nationality Price Overrides configured for this processing option.
+
+**Authorization:** Public
+
+#### Response `200 OK`
+
+```json
 {
-  "statusCode": 404,
-  "data": null,
-  "message": "Exception not found",
+  "statusCode": 200,
+  "data": [
+    {
+      "id": "f1a2b3c4-0001-4562-b3fc-2c963f66afa6",
+      "visaProcessingId": "b2c3d4e5-2222-4562-b3fc-2c963f66afa6",
+      "nationalityId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "price": 8.00,
+      "createdDateTime": "2026-06-06T10:00:00",
+      "modifiedDateTime": "2026-06-06T10:00:00"
+    }
+  ],
+  "message": "Success",
   "timestamp": "2026-06-06T10:00:00"
 }
+```
+
+#### Response `404 Not Found`
+
+```json
+{ "statusCode": 404, "data": null, "message": "Visa processing not found", "timestamp": "2026-06-06T10:00:00" }
+```
+
+---
+
+### POST /api/v1/visa-processing/{id}/nationality-prices
+
+Set the price override for a nationality on this processing option. **Upsert** — if a price is already configured for this (VisaProcessing, Nationality) pair, it is replaced with the new value rather than rejected as a duplicate.
+
+**Authorization:** `Admin` only
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| nationalityId | string (UUID) | Yes | FK → VisaNationality.Id |
+| price | number (decimal) | Yes | The overridden price for this nationality |
+
+```json
+{ "nationalityId": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "price": 8.00 }
+```
+
+#### Response `200 OK`
+
+```json
+{ "statusCode": 200, "data": "", "message": "Nationality price saved successfully", "timestamp": "2026-06-06T10:00:00" }
+```
+
+#### Response `404 Not Found`
+
+```json
+{ "statusCode": 404, "data": null, "message": "Visa processing or nationality not found", "timestamp": "2026-06-06T10:00:00" }
+```
+
+---
+
+### DELETE /api/v1/visa-processing/{id}/nationality-prices
+
+Remove a nationality's price override on this processing option, reverting that nationality to the option's default `price`.
+
+**Authorization:** `Admin` only
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| nationalityId | string (UUID) | Yes | FK → VisaNationality.Id |
+
+```json
+{ "nationalityId": "3fa85f64-5717-4562-b3fc-2c963f66afa6" }
+```
+
+#### Response `404 Not Found`
+
+```json
+{ "statusCode": 404, "data": null, "message": "Nationality price not found", "timestamp": "2026-06-06T10:00:00" }
 ```
 
 ---
@@ -1877,9 +2034,9 @@ Return all public holidays for a given year, ordered by date. Used by the fronte
 
 #### Query Parameters
 
-| Parameter | Type    | Required | Description                 |
-| --------- | ------- | -------- | --------------------------- |
-| year      | integer | Yes      | Calendar year (e.g. `2026`) |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| year | integer | Yes | Calendar year (e.g. `2026`) |
 
 #### Response `200 OK`
 
@@ -1924,10 +2081,10 @@ Authenticate with email and password. Returns a JWT bearer token.
 
 #### Request Body
 
-| Field    | Type   | Required | Description         |
-| -------- | ------ | -------- | ------------------- |
-| email    | string | Yes      | Admin user email    |
-| password | string | Yes      | Admin user password |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| email | string | Yes | Admin user email |
+| password | string | Yes | Admin user password |
 
 ```json
 {
@@ -1972,12 +2129,12 @@ Create a new admin user with a specified role.
 
 #### Request Body
 
-| Field    | Type   | Required | Description              |
-| -------- | ------ | -------- | ------------------------ |
-| email    | string | Yes      | New user's email address |
-| fullName | string | Yes      | New user's full name     |
-| password | string | Yes      | Initial password         |
-| role     | string | Yes      | `"Admin"` or `"Staff"`   |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| email | string | Yes | New user's email address |
+| fullName | string | Yes | New user's full name |
+| password | string | Yes | Initial password |
+| role | string | Yes | `"Admin"` or `"Staff"` |
 
 ```json
 {
@@ -2053,17 +2210,17 @@ Update a user's full name, role, and/or active status. All fields are optional �
 
 #### Path Parameters
 
-| Parameter | Type   | Required | Description                          |
-| --------- | ------ | -------- | ------------------------------------ |
-| id        | string | Yes      | User ID (ASP.NET Identity string ID) |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string | Yes | User ID (ASP.NET Identity string ID) |
 
 #### Request Body
 
-| Field    | Type    | Required | Description                                 |
-| -------- | ------- | -------- | ------------------------------------------- |
-| fullName | string  | No       | Updated full name                           |
-| role     | string  | No       | `"Admin"` or `"Staff"`                      |
-| isActive | boolean | No       | Set to `false` to deactivate (blocks login) |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| fullName | string | No | Updated full name |
+| role | string | No | `"Admin"` or `"Staff"` |
+| isActive | boolean | No | Set to `false` to deactivate (blocks login) |
 
 ```json
 {
@@ -2121,9 +2278,9 @@ Permanently delete an admin user.
 
 #### Path Parameters
 
-| Parameter | Type   | Required | Description                          |
-| --------- | ------ | -------- | ------------------------------------ |
-| id        | string | Yes      | User ID (ASP.NET Identity string ID) |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string | Yes | User ID (ASP.NET Identity string ID) |
 
 #### Response `200 OK`
 
@@ -2190,10 +2347,10 @@ Create a new category. Slug is auto-generated from `name` if omitted.
 
 #### Request Body
 
-| Field | Type   | Required | Description                                     |
-| ----- | ------ | -------- | ----------------------------------------------- |
-| name  | string | Yes      | Category display name                           |
-| slug  | string | No       | Custom slug; auto-generated from name if absent |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | Category display name |
+| slug | string | No | Custom slug; auto-generated from name if absent |
 
 ```json
 { "name": "Visa Guides" }
@@ -2218,11 +2375,11 @@ Create a new category. Slug is auto-generated from `name` if omitted.
 
 #### Error responses
 
-| Scenario       | Status | Message                 |
-| -------------- | ------ | ----------------------- |
-| `name` missing | 400    | `"Name is required"`    |
-| Slug collision | 409    | `"Slug already exists"` |
-| No valid token | 401    | _(empty body)_          |
+| Scenario | Status | Message |
+|---|---|---|
+| `name` missing | 400 | `"Name is required"` |
+| Slug collision | 409 | `"Slug already exists"` |
+| No valid token | 401 | *(empty body)* |
 
 ---
 
@@ -2234,9 +2391,9 @@ Update a category's name and/or slug.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description |
-| --------- | ------------- | -------- | ----------- |
-| id        | string (UUID) | Yes      | Category ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Category ID |
 
 #### Request Body
 
@@ -2261,11 +2418,11 @@ Same schema as `POST /api/v1/categories`.
 
 #### Error responses
 
-| Scenario       | Status | Message                 |
-| -------------- | ------ | ----------------------- |
-| `name` missing | 400    | `"Name is required"`    |
-| Unknown `id`   | 404    | `"Category not found"`  |
-| Slug collision | 409    | `"Slug already exists"` |
+| Scenario | Status | Message |
+|---|---|---|
+| `name` missing | 400 | `"Name is required"` |
+| Unknown `id` | 404 | `"Category not found"` |
+| Slug collision | 409 | `"Slug already exists"` |
 
 ---
 
@@ -2277,9 +2434,9 @@ Permanently delete a category. Returns `409` if the category still has posts.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description |
-| --------- | ------------- | -------- | ----------- |
-| id        | string (UUID) | Yes      | Category ID |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Category ID |
 
 #### Response `200 OK`
 
@@ -2294,10 +2451,10 @@ Permanently delete a category. Returns `409` if the category still has posts.
 
 #### Error responses
 
-| Scenario           | Status | Message                                        |
-| ------------------ | ------ | ---------------------------------------------- |
-| Unknown `id`       | 404    | `"Category not found"`                         |
-| Category has posts | 409    | `"Cannot delete category with existing posts"` |
+| Scenario | Status | Message |
+|---|---|---|
+| Unknown `id` | 404 | `"Category not found"` |
+| Category has posts | 409 | `"Cannot delete category with existing posts"` |
 
 ---
 
@@ -2315,12 +2472,12 @@ Return a paginated list of posts. Unauthenticated callers see only `published` p
 
 #### Query Parameters
 
-| Parameter  | Type          | Required | Description                                         |
-| ---------- | ------------- | -------- | --------------------------------------------------- |
-| categoryId | string (UUID) | No       | Filter to posts belonging to this category          |
-| status     | string        | No       | Pass `"all"` (authenticated only) to include drafts |
-| page       | integer       | No       | Page number (default: `1`, min: `1`)                |
-| pageSize   | integer       | No       | Items per page (default: `20`, max: `100`)          |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| categoryId | string (UUID) | No | Filter to posts belonging to this category |
+| status | string | No | Pass `"all"` (authenticated only) to include drafts |
+| page | integer | No | Page number (default: `1`, min: `1`) |
+| pageSize | integer | No | Items per page (default: `20`, max: `100`) |
 
 #### Response `200 OK`
 
@@ -2362,9 +2519,9 @@ Return a single published post by its slug. Returns `404` for drafts and unknown
 
 #### Path Parameters
 
-| Parameter | Type   | Required | Description |
-| --------- | ------ | -------- | ----------- |
-| slug      | string | Yes      | Post slug   |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| slug | string | Yes | Post slug |
 
 #### Response `200 OK`
 
@@ -2415,14 +2572,14 @@ Create a new post. Slug is auto-generated from `title` if omitted; a numeric suf
 
 #### Request Body
 
-| Field        | Type          | Required | Description                           |
-| ------------ | ------------- | -------- | ------------------------------------- |
-| title        | string        | Yes      | Post title                            |
-| content      | string        | Yes      | Post body (HTML allowed)              |
-| categoryId   | string (UUID) | Yes      | Must reference an existing category   |
-| slug         | string        | No       | Custom slug; auto-generated if absent |
-| thumbnailUrl | string        | No       | URL of the post thumbnail image       |
-| status       | integer       | No       | `0` Draft (default) · `1` Published   |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| title | string | Yes | Post title |
+| content | string | Yes | Post body (HTML allowed) |
+| categoryId | string (UUID) | Yes | Must reference an existing category |
+| slug | string | No | Custom slug; auto-generated if absent |
+| thumbnailUrl | string | No | URL of the post thumbnail image |
+| status | integer | No | `0` Draft (default) · `1` Published |
 
 ```json
 {
@@ -2462,12 +2619,12 @@ Create a new post. Slug is auto-generated from `title` if omitted; a numeric suf
 
 #### Error responses
 
-| Scenario                                    | Status | Message                                                                      |
-| ------------------------------------------- | ------ | ---------------------------------------------------------------------------- |
-| `title`, `content`, or `categoryId` missing | 400    | `"Title is required"` / `"Content is required"` / `"CategoryId is required"` |
-| `categoryId` does not exist                 | 400    | `"Category not found"`                                                       |
-| `status` not `0` or `1`                     | 400    | `"Invalid status value"`                                                     |
-| Explicit slug collision                     | 409    | `"Slug already exists"`                                                      |
+| Scenario | Status | Message |
+|---|---|---|
+| `title`, `content`, or `categoryId` missing | 400 | `"Title is required"` / `"Content is required"` / `"CategoryId is required"` |
+| `categoryId` does not exist | 400 | `"Category not found"` |
+| `status` not `0` or `1` | 400 | `"Invalid status value"` |
+| Explicit slug collision | 409 | `"Slug already exists"` |
 
 ---
 
@@ -2479,9 +2636,9 @@ Replace all fields on an existing post. Slug is re-generated from `title` if omi
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description |
-| --------- | ------------- | -------- | ----------- |
-| id        | string (UUID) | Yes      | Post ID     |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Post ID |
 
 #### Request Body
 
@@ -2517,13 +2674,13 @@ Same schema as `POST /api/v1/posts`.
 
 #### Error responses
 
-| Scenario                                    | Status | Message                    |
-| ------------------------------------------- | ------ | -------------------------- |
-| `title`, `content`, or `categoryId` missing | 400    | _(field-specific message)_ |
-| `categoryId` does not exist                 | 400    | `"Category not found"`     |
-| `status` not `0` or `1`                     | 400    | `"Invalid status value"`   |
-| Unknown `id`                                | 404    | `"Post not found"`         |
-| Slug collision                              | 409    | `"Slug already exists"`    |
+| Scenario | Status | Message |
+|---|---|---|
+| `title`, `content`, or `categoryId` missing | 400 | *(field-specific message)* |
+| `categoryId` does not exist | 400 | `"Category not found"` |
+| `status` not `0` or `1` | 400 | `"Invalid status value"` |
+| Unknown `id` | 404 | `"Post not found"` |
+| Slug collision | 409 | `"Slug already exists"` |
 
 ---
 
@@ -2535,9 +2692,9 @@ Permanently delete a post.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description |
-| --------- | ------------- | -------- | ----------- |
-| id        | string (UUID) | Yes      | Post ID     |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Post ID |
 
 #### Response `200 OK`
 
@@ -2571,15 +2728,15 @@ Publish or unpublish a post without editing the full record.
 
 #### Path Parameters
 
-| Parameter | Type          | Required | Description |
-| --------- | ------------- | -------- | ----------- |
-| id        | string (UUID) | Yes      | Post ID     |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string (UUID) | Yes | Post ID |
 
 #### Request Body
 
-| Field  | Type    | Required | Description                  |
-| ------ | ------- | -------- | ---------------------------- |
-| status | integer | Yes      | `0` = Draft, `1` = Published |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| status | integer | Yes | `0` = Draft, `1` = Published |
 
 ```json
 { "status": 1 }
@@ -2615,7 +2772,8 @@ Publish or unpublish a post without editing the full record.
 
 #### Error responses
 
-| Scenario                | Status | Message                  |
-| ----------------------- | ------ | ------------------------ |
-| `status` not `0` or `1` | 400    | `"Invalid status value"` |
-| Unknown `id`            | 404    | `"Post not found"`       |
+| Scenario | Status | Message |
+|---|---|---|
+| `status` not `0` or `1` | 400 | `"Invalid status value"` |
+| Unknown `id` | 404 | `"Post not found"` |
+

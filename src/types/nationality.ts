@@ -5,6 +5,7 @@ export interface VisaNationality {
   isEligible: boolean
   exemptionDays: number | null
   groupId: string | null
+  requiresExtraDetails: boolean
 }
 
 export interface CreateNationalityRequest {
@@ -13,6 +14,7 @@ export interface CreateNationalityRequest {
   isEligible: boolean
   exemptionDays?: number
   groupId?: string
+  requiresExtraDetails?: boolean
 }
 
 export interface UpdateNationalityRequest {
@@ -21,4 +23,5 @@ export interface UpdateNationalityRequest {
   isEligible: boolean
   exemptionDays?: number
   groupId?: string
+  requiresExtraDetails?: boolean
 }

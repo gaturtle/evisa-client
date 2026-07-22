@@ -32,6 +32,7 @@ const formSchema = z.object({
   origName: z.string().min(1, "English name is required"),
   vietnameseName: z.string().min(1, "Vietnamese name is required"),
   isEligible: z.boolean(),
+  requiresExtraDetails: z.boolean(),
   exemptionDays: z.coerce
     .number()
     .int()
@@ -69,6 +70,7 @@ export function NationalityFormDialog({
       origName: "",
       vietnameseName: "",
       isEligible: false,
+      requiresExtraDetails: false,
       exemptionDays: undefined,
       groupId: "",
     },
@@ -84,10 +86,18 @@ export function NationalityFormDialog({
               origName: nationality.origName,
               vietnameseName: nationality.vietnameseName,
               isEligible: nationality.isEligible,
+              requiresExtraDetails: nationality.requiresExtraDetails,
               exemptionDays: nationality.exemptionDays ?? undefined,
               groupId: nationality.groupId ?? "",
             }
-          : { origName: "", vietnameseName: "", isEligible: false, exemptionDays: undefined, groupId: "" }
+          : {
+              origName: "",
+              vietnameseName: "",
+              isEligible: false,
+              requiresExtraDetails: false,
+              exemptionDays: undefined,
+              groupId: "",
+            }
       )
     }
   }, [open, nationality, form])
@@ -98,6 +108,7 @@ export function NationalityFormDialog({
         origName: values.origName,
         vietnameseName: values.vietnameseName,
         isEligible: values.isEligible,
+        requiresExtraDetails: values.requiresExtraDetails,
         exemptionDays: values.isEligible ? values.exemptionDays : undefined,
         groupId: values.groupId || undefined,
       }
@@ -168,6 +179,22 @@ export function NationalityFormDialog({
                     />
                   </FormControl>
                   <FormLabel className="!mt-0">Eligible for e-visa</FormLabel>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="requiresExtraDetails"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="!mt-0">Requires extra details</FormLabel>
                 </FormItem>
               )}
             />

@@ -92,6 +92,7 @@ export function NationalitiesPage() {
               <col style={{ width: 120 }} />
               <col style={{ width: 140 }} />
               <col style={{ width: 140 }} />
+              <col style={{ width: 140 }} />
               <col style={{ width: 90 }} />
             </colgroup>
             <TableHeader className="sticky top-0 z-10 bg-muted/80">
@@ -101,13 +102,14 @@ export function NationalitiesPage() {
                 <TableHead className="px-4 text-muted-foreground/70">Is Eligible</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Exemption Days</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Group</TableHead>
+                <TableHead className="px-4 text-muted-foreground/70">Extra Details</TableHead>
                 <TableHead className="px-4 text-muted-foreground/70">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                     Loading…
                   </TableCell>
                 </TableRow>
@@ -115,7 +117,7 @@ export function NationalitiesPage() {
 
               {isError && (
                 <TableRow>
-                  <TableCell colSpan={6} className="px-4 py-12 text-center text-destructive">
+                  <TableCell colSpan={7} className="px-4 py-12 text-center text-destructive">
                     Failed to load nationalities.
                   </TableCell>
                 </TableRow>
@@ -123,7 +125,7 @@ export function NationalitiesPage() {
 
               {!isLoading && !isError && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                     No nationalities found.
                   </TableCell>
                 </TableRow>
@@ -158,6 +160,13 @@ export function NationalitiesPage() {
                       {nationality.groupId
                         ? groupNameById.get(nationality.groupId) ?? "—"
                         : "—"}
+                    </TableCell>
+                    <TableCell className="px-4">
+                      {nationality.requiresExtraDetails ? (
+                        <Badge variant="secondary">Required</Badge>
+                      ) : (
+                        <span className="text-foreground/60">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="px-4">
                       <div className="flex items-center gap-1">

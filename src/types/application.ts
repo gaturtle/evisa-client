@@ -63,10 +63,17 @@ export interface Applicant {
   id: string
   firstName: string
   lastName: string
-  nationality: string
+  nationalityId: string | null
+  nationalityName: string
   passportPhotoPath: string | null
   portraitPhotoPath: string | null
   documentPath: string | null
+  religion: string | null
+  phoneInCountry: string | null
+  usedOtherPassport: string | null
+  otherPassportNumber: string | null
+  violatedLaws: string | null
+  violationDetails: string | null
 }
 
 export interface PaymentRecord {
@@ -91,11 +98,28 @@ export interface VisaApplicationDetail {
   contactPhone: string
   contactEmail: string
   contactAddress: string
+  companyName: string | null
+  companyPhone: string | null
+  companyAddress: string | null
   isUrgentProcessing: boolean
   isMultipleEntry: boolean
   isAirportTransfer: boolean
   isOther: boolean
   notes: string | null
+  emergencyContactName: string | null
+  emergencyContactPhone: string | null
+  emergencyContactRelationship: string | null
+  emergencyContactAddress: string | null
+  occupationCompanyName: string | null
+  occupationJobTitle: string | null
+  occupationCompanyPhone: string | null
+  occupationCompanyAddress: string | null
+  vnStayAddress: string | null
+  vnStayPhone: string | null
+  vnVisitedLastYear: string | null
+  vnVisitDetails: string | null
+  vnHasRelatives: string | null
+  vnRelativeDetails: string | null
   processingStartDate: string | null
   completedDateTime: string | null
   createdDateTime: string
@@ -112,7 +136,13 @@ export interface UpdateStatusRequest {
 export interface UpdateApplicationApplicant {
   firstName: string
   lastName: string
-  nationality: string
+  nationalityId: string
+  religion?: string
+  phoneInCountry?: string
+  usedOtherPassport?: string
+  otherPassportNumber?: string
+  violatedLaws?: string
+  violationDetails?: string
 }
 
 export interface UpdateApplicationRequest {
@@ -120,6 +150,9 @@ export interface UpdateApplicationRequest {
   contactPhone: string
   contactEmail: string
   contactAddress: string
+  companyName?: string
+  companyPhone?: string
+  companyAddress?: string
   entryDate: string
   exitDate: string
   visaTypeId: string
@@ -129,5 +162,19 @@ export interface UpdateApplicationRequest {
   isAirportTransfer?: boolean
   isOther?: boolean
   notes?: string
+  emergencyContactName?: string
+  emergencyContactPhone?: string
+  emergencyContactRelationship?: string
+  emergencyContactAddress?: string
+  occupationCompanyName?: string
+  occupationJobTitle?: string
+  occupationCompanyPhone?: string
+  occupationCompanyAddress?: string
+  vnStayAddress?: string
+  vnStayPhone?: string
+  vnVisitedLastYear?: string
+  vnVisitDetails?: string
+  vnHasRelatives?: string
+  vnRelativeDetails?: string
   applicants: UpdateApplicationApplicant[]
 }

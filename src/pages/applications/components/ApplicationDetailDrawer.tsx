@@ -1,7 +1,23 @@
 import { useRef, useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { CheckCircle2, Download, Paperclip, Pencil, Trash2 } from "lucide-react"
+import {
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  FileText,
+  MapPin,
+  Paperclip,
+  Pencil,
+  Plane,
+  ShieldAlert,
+  Trash2,
+  User,
+} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 import {
   getApplicationDetail,
@@ -17,6 +33,7 @@ import {
   APPLICATION_STATUS_LABELS,
   PAYMENT_STATUS_LABELS,
 } from "@/types/application"
+import type { Applicant } from "@/types/application"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,6 +89,32 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
+function yesNoLabel(value: string | null, details: string | null) {
+  if (!value) return null
+  const label = value === "yes" ? "Yes" : "No"
+  return details ? `${label} — ${details}` : label
+}
+
+function Section({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string
+  icon: LucideIcon
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-md border p-4">
+      <h3 className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+        <Icon className="h-3.5 w-3.5" />
+        {title}
+      </h3>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3">{children}</div>
+    </div>
+  )
+}
+
 const TERMINAL_STATUSES = new Set<ApplicationStatus>([
   ApplicationStatus.Approved,
   ApplicationStatus.Rejected,
@@ -117,13 +160,15 @@ function ApplicantRow({
   applicationId,
   isApproved,
 }: {
-  applicant: { id: string; firstName: string; lastName: string; portraitPhotoPath: string | null; passportPhotoPath: string | null; documentPath: string | null }
+  applicant: Applicant
   index: number
   applicationId: string
   isApproved: boolean
 }) {
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [expanded, setExpanded] = useState(false)
+  const hasExtraDetails = applicant.religion !== null
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => uploadApplicantDocument(applicationId, applicant.id, file),
@@ -155,9 +200,21 @@ function ApplicantRow({
     <div className="flex flex-col rounded-lg border px-3 py-3 text-sm">
       <div className="flex items-center gap-3">
         <span className="w-5 shrink-0 text-center text-xs text-muted-foreground/60">{index + 1}</span>
-        <span className="flex-1 font-medium text-foreground/80">
+        <span className="flex-1 truncate font-medium text-foreground/80">
           {applicant.firstName} {applicant.lastName}
+          {applicant.nationalityName && (
+            <span className="ml-1.5 font-normal text-muted-foreground">· {applicant.nationalityName}</span>
+          )}
         </span>
+        {hasExtraDetails && (
+          <button
+            onClick={() => setExpanded((e) => !e)}
+            className="shrink-0 rounded p-0.5 text-muted-foreground/60 hover:text-foreground"
+            title={expanded ? "Hide details" : "Show details"}
+          >
+            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+        )}
         {isApproved && (
           <>
             <input
@@ -188,6 +245,20 @@ function ApplicantRow({
         portraitPhotoPath={applicant.portraitPhotoPath}
         passportPhotoPath={applicant.passportPhotoPath}
       />
+      {expanded && hasExtraDetails && (
+        <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 border-t pt-3">
+          <Field label="Religion" value={applicant.religion} />
+          <Field label="Phone in Home Country" value={applicant.phoneInCountry} />
+          <Field
+            label="Used Other Passport"
+            value={yesNoLabel(applicant.usedOtherPassport, applicant.otherPassportNumber)}
+          />
+          <Field
+            label="Violated Vietnamese Laws"
+            value={yesNoLabel(applicant.violatedLaws, applicant.violationDetails)}
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -317,40 +388,68 @@ function DrawerBody({ id, onDelete }: { id: string; onDelete: () => void }) {
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         {tab === "Overview" && (
-          <div className="flex flex-col gap-6">
-            <div>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">Contact</h3>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                <Field label="Phone" value={detail.contactPhone} />
-                <Field label="Email" value={detail.contactEmail} />
-                <div className="col-span-2">
-                  <Field label="Address" value={detail.contactAddress} />
-                </div>
+          <div className="flex flex-col gap-4">
+            <Section title="Contact" icon={User}>
+              <Field label="Phone" value={detail.contactPhone} />
+              <Field label="Email" value={detail.contactEmail} />
+              <div className="col-span-2">
+                <Field label="Address" value={detail.contactAddress} />
               </div>
-            </div>
-            <div>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">Travel</h3>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                <div className="col-span-2">
-                  <Field label="Purpose of Travel" value={detail.purposeOfTravel} />
-                </div>
-                <Field label="Entry Date" value={detail.entryDate ? formatDate(detail.entryDate) : null} />
-                <Field label="Exit Date" value={detail.exitDate ? formatDate(detail.exitDate) : null} />
-                <Field label="Visa Type" value={visaTypeLabel} />
-                <Field label="Processing Option" value={processingLabel} />
-                {detail.processingStartDate && (
-                  <Field label="Processing Started" value={formatDate(detail.processingStartDate)} />
-                )}
-                {detail.completedDateTime && (
-                  <Field label="Completed" value={formatDate(detail.completedDateTime)} />
-                )}
+            </Section>
+            <Section title="Travel" icon={Plane}>
+              <div className="col-span-2">
+                <Field label="Purpose of Travel" value={detail.purposeOfTravel} />
               </div>
-            </div>
+              <Field label="Entry Date" value={detail.entryDate ? formatDate(detail.entryDate) : null} />
+              <Field label="Exit Date" value={detail.exitDate ? formatDate(detail.exitDate) : null} />
+              <Field label="Visa Type" value={visaTypeLabel} />
+              <Field label="Processing Option" value={processingLabel} />
+              {detail.processingStartDate && (
+                <Field label="Processing Started" value={formatDate(detail.processingStartDate)} />
+              )}
+              {detail.completedDateTime && (
+                <Field label="Completed" value={formatDate(detail.completedDateTime)} />
+              )}
+            </Section>
+            {detail.companyName !== null && (
+              <Section title="Company" icon={Building2}>
+                <Field label="Company Name" value={detail.companyName} />
+                <Field label="Company Phone" value={detail.companyPhone} />
+                <div className="col-span-2">
+                  <Field label="Company Address" value={detail.companyAddress} />
+                </div>
+              </Section>
+            )}
+            {detail.occupationCompanyName !== null && (
+              <Section title="Occupation" icon={Briefcase}>
+                <Field label="Employer Name" value={detail.occupationCompanyName} />
+                <Field label="Job Title" value={detail.occupationJobTitle} />
+                <Field label="Employer Phone" value={detail.occupationCompanyPhone} />
+                <Field label="Employer Address" value={detail.occupationCompanyAddress} />
+              </Section>
+            )}
+            {detail.emergencyContactName !== null && (
+              <Section title="Emergency Contact" icon={ShieldAlert}>
+                <Field label="Full Name" value={detail.emergencyContactName} />
+                <Field label="Phone" value={detail.emergencyContactPhone} />
+                <Field label="Relationship" value={detail.emergencyContactRelationship} />
+                <Field label="Address" value={detail.emergencyContactAddress} />
+              </Section>
+            )}
+            {detail.vnStayAddress !== null && (
+              <Section title="Vietnam History" icon={MapPin}>
+                <Field label="Stay Address" value={detail.vnStayAddress} />
+                <Field label="Stay Phone" value={detail.vnStayPhone} />
+                <Field label="Visited Last Year" value={yesNoLabel(detail.vnVisitedLastYear, detail.vnVisitDetails)} />
+                <Field label="Has Relatives in Vietnam" value={yesNoLabel(detail.vnHasRelatives, detail.vnRelativeDetails)} />
+              </Section>
+            )}
             {detail.notes && (
-              <div>
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">Notes</h3>
-                <p className="text-sm text-foreground">{detail.notes}</p>
-              </div>
+              <Section title="Notes" icon={FileText}>
+                <div className="col-span-2">
+                  <p className="text-sm text-foreground">{detail.notes}</p>
+                </div>
+              </Section>
             )}
           </div>
         )}
